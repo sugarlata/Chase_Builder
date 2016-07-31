@@ -1,107 +1,16 @@
 import arrow
 
-class Photo:
 
+class MediaObject:
+
+    __location_name__ = str()
     __epoch__ = int()
     __localtime__ = str()
-    __ISO__ = str()
+    __iso__ = str()
     __lat__ = float()
     __lon__ = float()
     __fn__ = str()
-    __groupnumber__ = int()
-    __tz__ = str()
-
-    def __init__(self, epoch, fn, lat, lon, tz):
-        self.__epoch__ = epoch
-        self.__fn__ = fn
-        self.__lat__=lat
-        self.__lon__=lon
-        self.__ISO__=arrow.get(epoch)
-        self.__localtime__ = self.__ISO__.to(tz).format('YYYY-MM-DD HH:mm:ss')
-
-    def getEpoch(self):
-        return self.__epoch__
-
-    def getLocal(self):
-        return self.__localtime__
-
-    def getISO(self):
-        return self.__ISO__
-
-    def getLocation(self):
-        return self.__lat__, self.__lon__
-
-    def getFilename(self):
-        return self.__fn__
-
-    def setFilename(self,fn):
-        self.__fn__ = fn
-
-    def getGroupNumber(self):
-        return self.__group__
-
-    def setGroupNumber(self, gn):
-        self.__group__ = gn
-
-    def getTZ(self):
-        return self.__tz__
-
-
-class Video:
-    __epoch__ = int()
-    __localtime__ = str()
-    __ISO__ = str()
-    __lat__ = float()
-    __lon__ = float()
-    __fn__ = str()
-    __groupnumber__ = int()
-    __tz__ = str()
-
-    def __init__(self, epoch, fn, lat, lon, tz):
-
-        self.__epoch__ = epoch
-        self.__fn__ = fn
-        self.__lat__ = lat
-        self.__lon__ = lon
-        self.__ISO__ = arrow.get(epoch)
-        self.__localtime__ = self.__ISO__.to(tz).format('YYYY-MM-DD HH:mm:ss')
-
-    def getEpoch(self):
-        return self.__epoch__
-
-    def getLocal(self):
-        return self.__localtime__
-
-    def getISO(self):
-        return self.__ISO__
-
-    def getLocation(self):
-        return self.__lat__, self.__lon__
-
-    def getFilename(self):
-        return self.__fn__
-
-    def setFilename(self, fn):
-        self.__fn__ = fn
-
-    def getGroupNumber(self):
-        return self.__group__
-
-    def setGroupNumber(self, gn):
-        self.__group__ = gn
-
-    def getTZ(self):
-        return self.__tz__
-
-
-class Timelapse:
-    __epoch__ = int()
-    __localtime__ = str()
-    __ISO__ = str()
-    __lat__ = float()
-    __lon__ = float()
-    __fn__ = str()
-    __groupnumber__ = int()
+    __group_number__ = int()
     __tz__ = str()
 
     def __init__(self, epoch, fn, lat, lon, tz):
@@ -109,32 +18,43 @@ class Timelapse:
         self.__fn__ = fn
         self.__lat__ = lat
         self.__lon__ = lon
-        self.__ISO__ = arrow.get(epoch)
-        self.__localtime__ = self.__ISO__.to(tz).format('YYYY-MM-DD HH:mm:ss')
+        self.__iso__ = arrow.get(epoch)
+        self.__localtime__ = self.__iso__.to(tz).format('YYYY-MM-DD HH:mm:ss')
+        self.__location_name__ = ""
 
-    def getEpoch(self):
+    def get_epoch(self):
         return self.__epoch__
 
-    def getLocal(self):
+    def get_local(self):
         return self.__localtime__
 
-    def getISO(self):
-        return self.__ISO__
+    def get_iso(self):
+        return self.__iso__
 
-    def getLocation(self):
+    def get_location(self):
         return self.__lat__, self.__lon__
 
-    def getFilename(self):
+    def set_location(self, lat, lon):
+        self.__lat__ = lat
+        self.__lon__ = lon
+
+    def get_filename(self):
         return self.__fn__
 
-    def setFilename(self, fn):
+    def set_filename(self, fn):
         self.__fn__ = fn
 
-    def getGroupNumber(self):
-        return self.__group__
+    def get_group_number(self):
+        return self.__group_number__
 
-    def setGroupNumber(self, gn):
-        self.__group__ = gn
+    def set_group_number(self, gn):
+        self.__group_number__ = gn
 
-    def getTZ(self):
+    def get_location_name(self):
+        return self.__location_name__
+
+    def set_location_name(self, location_name):
+        self.__location_name__ = location_name
+
+    def get_tz(self):
         return self.__tz__

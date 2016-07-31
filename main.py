@@ -1,18 +1,30 @@
-import gps_methods as gps
 from radar_db import RadarDB
+import kml_creator as kml_creator
+import gps_methods as gps
 import radar_methods as radar_methods
+import radar_download_frames as radar_download_frames
+import media_methods as media_methods
+
 
 # ---------------------------------- Initialisation ----------------------------------
 
 # media_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\Media"
 
-# gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
-gps_track_filename = r"C:\Users\Nathan\Desktop\Chase 16-04-30\Track-trimmed.kml"
-root_path = r"C:\Users\Nathan\Desktop\Chase 16-04-30"
+gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
+root_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log"
+
+#gps_track_filename = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log\15-10-31 Chase Track-trimmed.kml"
+#root_path = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log"
+
+#gps_track_filename = r"C:\Users\Nathan\Desktop\Chase 16-04-30\Track-trimmed.kml"
+#root_path = r"C:\Users\Nathan\Desktop\Chase 16-04-30"
 
 radar_path = root_path + r"\Radar"
+media_path = root_path + r"\Media"
 
 tz = "Australia/Melbourne"
+
+ffmpeg_location = r"C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmpeg.exe"
 
 download_radar_module_enabled = True
 
@@ -26,77 +38,38 @@ gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename,tz)
 # Create the trimmed KML, update gpsTrack
 
 # ---------------------------------- Radar ----------------------------------
-
-# Load Radar Database
-radar_db = RadarDB('IDR023')
-
-# Identify local Radars along the track
-radar_set = radar_methods.get_near_idr_list(gps_track, tz)
-
-# If public, skip to make radar list from Files
-# If private, check website for frames and that they are downloaded
-
-if download_radar_module_enabled:
-    radar_methods.get_online_frames(radar_set, radar_path,start_time,end_time,root_path,tz)
-
-# Create KML File
-
+# TODO Uncomment this section of code
+# # Load Radar Database
+# radar_db = RadarDB('IDR023')
+#
+# # Identify local Radars along the track
+# radar_set = radar_methods.get_near_idr_list(gps_track, tz)
+#
+# # If public, skip to make radar list from Files
+# # If private, check website for frames and that they are downloaded
+#
+# if download_radar_module_enabled:
+#     frames_db = radar_download_frames.get_online_frames(radar_set, radar_path,start_time,end_time,root_path,tz)
+#
+# # Create KML File
+# kml_creator.create_radar_kml(frames_db, root_path, radar_path,tz)
 
 # ---------------------------------- Media ----------------------------------
 
 # Check that the media path exists
-
-# GUI Ask about downloading place names
-
-# If it doesn't exit()?
-
-# Get Photo List
-
-# Get Photo Exif Data (time taken)
-
-# Create db of pictures and the time taken
-
-# Set the time for leftover photos manually
-
-# Set the location for each picture
-
-# Resize photos as necessary
-
-# Group Photos together
-
-
-# Get video list
-
-# Get time from filename
-
-# Create db of video and the time taken
-
-# Set the time for leftover videos
-
-# Set the location for each video
-
-# Group Videos as necessary
-
-
-# Get Timelapse List
-
-# Get time from Timelapse
-
-# Create the video
-
-# Create db of videos and the time they were taken
-
-# Set the time for leftover videos
-
-# Set the location for each video
-
-# Group videos as necessary
-
-# Create the Media KML
+if media_methods.check_media_path_exists(media_path):
+    media_methods.process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz)
+else:
+    print "------------------------------------------------------------"
+    print ""
+    print "No Media found for this chase"
+    print ""
+    print "------------------------------------------------------------"
 
 
 
-##TODO
+
+##TODO Photos and Video, and Timelapse, instead of using filenames use address
 ##TODO RADAR Module (Public)
 ##TODO RADAR Module (Private)
 ##TODO Media Module
