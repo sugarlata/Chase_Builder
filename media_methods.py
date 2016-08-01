@@ -6,6 +6,7 @@ import arrow
 import math
 import os
 import gps_methods
+import kml_creator
 
 
 def check_media_path_exists(media_path):
@@ -294,6 +295,7 @@ def set_time_time(time_path_list, pattern_list, tz):
 
     return time_list
 
+
 def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz):
 
     # List of patterns for matching time codes. Second item in list is string for removal
@@ -303,54 +305,57 @@ def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time,
     # Set the Frame Rate
     frame_rate = 25
 
+    # How long for media icons to dwell (in minutes)
+    dwell_time = 45
+
     # GUI Ask about downloading place names
     dl_place_names = gui_download_place_names()
 
-    # # ---------------------------------- Photo ----------------------------------
-    #
-    # # Get Photo List
-    # photo_filename_list = get_photo_list(media_path)
+    # ---------------------------------- Photo ----------------------------------
 
-    # # Check if the list is empty
-    #
-    # # TODO Code module here for user to manually select what pictures they want in and out.
-    # # TODO Need to edit photo_filename_list (along with above)
-    #
-    # # Get Photo Exif Data (time taken)
-    # photo_list, rejected_photos_filename_list = get_photo_exif_data(media_path, photo_filename_list, start_time,
-    #                                                                 end_time, tz)
-    # # Set the time for leftover photos manually
-    # # TODO Write code for this gui
-    # if len(rejected_photos_filename_list)!=0:
-    #     print ""
-    #
-    # # Set the location for each picture
-    # photo_list = set_media_location(photo_list, gps_track)
-    #
-    # # Resize photos as necessary
-    # set_resized_photos(media_path, photo_list)
-    #
-    # # Group Photos together
-    # set_media_groups(photo_list)
+    # Get Photo List
+    photo_filename_list = get_photo_list(media_path)
 
-    # # ---------------------------------- Video ----------------------------------
-    #
-    # # Get video list
-    # video_filename_list = get_video_list(media_path)
-    #
-    # # Check if the list is empty
-    #
-    # # Get time from filename
-    # video_list, rejected_video_filename_list = set_video_time(video_filename_list, pattern_list, tz)
-    #
-    # # Set the time for leftover videos
-    # # TODO Write code for this gui
-    #
-    # # Set the location for each video
-    # video_list = set_media_location(video_list, gps_track)
-    #
-    # # Group Videos as necessary
-    # set_media_groups(video_list)
+    # Check if the list is empty
+
+    # TODO Code module here for user to manually select what pictures they want in and out.
+    # TODO Need to edit photo_filename_list (along with above)
+
+    # Get Photo Exif Data (time taken)
+    photo_list, rejected_photos_filename_list = get_photo_exif_data(media_path, photo_filename_list, start_time,
+                                                                    end_time, tz)
+    # Set the time for leftover photos manually
+    # TODO Write code for this gui
+    if len(rejected_photos_filename_list)!=0:
+        print ""
+
+    # Set the location for each picture
+    photo_list = set_media_location(photo_list, gps_track)
+
+    # Resize photos as necessary
+    set_resized_photos(media_path, photo_list)
+
+    # Group Photos together
+    set_media_groups(photo_list)
+
+    # ---------------------------------- Video ----------------------------------
+
+    # Get video list
+    video_filename_list = get_video_list(media_path)
+
+    # Check if the list is empty
+
+    # Get time from filename
+    video_list, rejected_video_filename_list = set_video_time(video_filename_list, pattern_list, tz)
+
+    # Set the time for leftover videos
+    # TODO Write code for this gui
+
+    # Set the location for each video
+    video_list = set_media_location(video_list, gps_track)
+
+    # Group Videos as necessary
+    set_media_groups(video_list)
 
     # ---------------------------------- Time Lapse ----------------------------------
 
@@ -375,3 +380,4 @@ def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time,
     # ---------------------------------- KML ----------------------------------
 
     # Create the Media KML
+    kml_creator.create_media_kml(root_path, photo_list, video_list, time_list, dwell_time, tz)

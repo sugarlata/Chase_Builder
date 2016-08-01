@@ -8,13 +8,11 @@ import media_methods as media_methods
 
 # ---------------------------------- Initialisation ----------------------------------
 
-# media_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\Media"
+#gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
+#root_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log"
 
-gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
-root_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log"
-
-#gps_track_filename = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log\15-10-31 Chase Track-trimmed.kml"
-#root_path = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log"
+gps_track_filename = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log\15-10-31 Chase Track-trimmed.kml"
+root_path = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log"
 
 #gps_track_filename = r"C:\Users\Nathan\Desktop\Chase 16-04-30\Track-trimmed.kml"
 #root_path = r"C:\Users\Nathan\Desktop\Chase 16-04-30"
@@ -38,7 +36,7 @@ gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename,tz)
 # Create the trimmed KML, update gpsTrack
 
 # ---------------------------------- Radar ----------------------------------
-# TODO Uncomment this section of code
+
 # # Load Radar Database
 # radar_db = RadarDB('IDR023')
 #
@@ -67,10 +65,27 @@ else:
     print "------------------------------------------------------------"
 
 
+# TODO Troubleshoot why Radar location isn't centered on locations properly
+# TODO Photos and Video, and Timelapse, instead of using filenames use address
+# TODO RADAR Module (Public)
+# TODO GUI Module
+# TODO Change names in KML file for Radar to common names
 
+# TODO Create TZ selector, default can be selected (saved in data file)
+# TODO Troubleshoot time code for videos
 
-##TODO Photos and Video, and Timelapse, instead of using filenames use address
-##TODO RADAR Module (Public)
-##TODO RADAR Module (Private)
-##TODO Media Module
-##TODO GUI Module
+# TODO Create a GUI for dwell time
+# TODO Change pictures for car (troubleshooting, different kml)
+# TODO Build GUI to house everything
+# TODO Find a module to put stdout in a scrollbox in GUI
+# TODO Implement shortlister for pictures
+# TODO Implement GUI to select ffmpeg. Include error handling
+# TODO Create an EXE using nuitka
+
+# TODO Implement error handling if no track file is selected
+# TODO Write code for selecting IDRCodes
+# TODO Write code for WorkingOffline
+# TODO Implement a version of the code for online use that manually downloads radar
+
+# TODO Implement gpx support
+# TODO Create module to dissect a location history KML downloaded from Google
