@@ -8,11 +8,11 @@ import media_methods as media_methods
 
 # ---------------------------------- Initialisation ----------------------------------
 
-#gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
-#root_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log"
+gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
+root_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log"
 
-gps_track_filename = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log\15-10-31 Chase Track-trimmed.kml"
-root_path = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log"
+#gps_track_filename = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log\15-10-31 Chase Track-trimmed.kml"
+#root_path = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log"
 
 #gps_track_filename = r"C:\Users\Nathan\Desktop\Chase 16-04-30\Track-trimmed.kml"
 #root_path = r"C:\Users\Nathan\Desktop\Chase 16-04-30"
@@ -37,20 +37,20 @@ gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename,tz)
 
 # ---------------------------------- Radar ----------------------------------
 
-# # Load Radar Database
-# radar_db = RadarDB('IDR023')
-#
-# # Identify local Radars along the track
-# radar_set = radar_methods.get_near_idr_list(gps_track, tz)
-#
-# # If public, skip to make radar list from Files
-# # If private, check website for frames and that they are downloaded
-#
-# if download_radar_module_enabled:
-#     frames_db = radar_download_frames.get_online_frames(radar_set, radar_path,start_time,end_time,root_path,tz)
-#
-# # Create KML File
-# kml_creator.create_radar_kml(frames_db, root_path, radar_path,tz)
+# Load Radar Database
+radar_db = RadarDB('IDR023')
+
+# Identify local Radars along the track
+radar_set = radar_methods.get_near_idr_list(gps_track, tz)
+
+# If public, skip to make radar list from Files
+# If private, check website for frames and that they are downloaded
+
+if download_radar_module_enabled:
+    frames_db = radar_download_frames.get_online_frames(radar_set, radar_path,start_time,end_time,root_path,tz)
+
+# Create KML File
+kml_creator.create_radar_kml(frames_db, root_path, radar_path,tz)
 
 # ---------------------------------- Media ----------------------------------
 
@@ -66,7 +66,7 @@ else:
 
 
 # TODO Troubleshoot why Radar location isn't centered on locations properly
-# TODO Photos and Video, and Timelapse, instead of using filenames use address
+# TODO Photos and Video, and Time lapse, instead of using file names use address
 # TODO RADAR Module (Public)
 # TODO GUI Module
 # TODO Change names in KML file for Radar to common names
@@ -74,6 +74,7 @@ else:
 # TODO Create TZ selector, default can be selected (saved in data file)
 # TODO Troubleshoot time code for videos
 
+# TODO Create a GUI for manually selecting IDR Codes
 # TODO Create a GUI for dwell time
 # TODO Change pictures for car (troubleshooting, different kml)
 # TODO Build GUI to house everything

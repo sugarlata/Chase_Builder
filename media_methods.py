@@ -96,7 +96,7 @@ def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, t
 
             else:
                 # Otherwise the photo is ready to go, and add the media object into the photo_list
-                photo_list.insert(len(photo_list), MediaObject(photo_epoch, photo_filename_list[i], 0, 0, tz))
+                photo_list.append(MediaObject(photo_epoch, photo_filename_list[i], 0, 0, tz))
 
     return photo_list, rejected_photo_filename_list
 
@@ -152,7 +152,7 @@ def set_resized_photos(media_path, photo_list):
 
         # Open file to test the size of the photo
         image = PIL.Image.open(media_path + "\\" + photo_list[i].get_filename())
-        image_filename_resized = media_path + "\\r-" + photo_list[i].get_filename()
+        image_filename_resized = "r-" + photo_list[i].get_filename()
         image_filename = media_path + "\\" + photo_list[i].get_filename()
         width, height = image.size
 
@@ -182,7 +182,7 @@ def set_resized_photos(media_path, photo_list):
 
                 image = image.resize((scWidth, scHeight), PIL.Image.ANTIALIAS)
 
-                image.save(image_filename_resized)
+                image.save(media_path + "\\" + image_filename_resized)
                 image_filename = image_filename_resized
             else:
                 # Already resized, but need to amend the file name
@@ -225,7 +225,7 @@ def set_media_groups(media_list):
                 distance = gps_methods.get_distance_from_coordinates(lat1, lon1, lat2, lon2)
 
                 # If distance is close enough, set the group number to the earlier gorup number
-                if distance < 100:
+                if distance < 300:
                     media_list[i].set_group_number(media_list[j].get_group_number())
                     break
 
@@ -320,10 +320,26 @@ def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_r
 
     # Go through each time coded folder
     for i in range(0, len(time_path_list)):
-        # Check if there's already a timelapse file created, if not then:
+        # Check if there's already a time lapse file created, if not then:
         if (os.path.isfile(media_path + "\\" + time_path_list[i] + "-timelapse.mp4")) != True:
+
+            # Need to create an ffmpeg command call in two parts
+            # First part will hold the ffmpeg executable
+            # Second part has the options for rendering the video
+
             os.chdir(media_path + "\\" + time_path_list[i])
-            ffmpegCommand = ffmpeg_location
+            ffmpeg_command = ffmpeg_location
+
+            # Need to figure out the name of the files to pass into the ffmpeg options
+            # An example format:
+            # Proj17_img00000014.jpg
+            # Need to find the first file that matches this pattern, and create the pattern getting the project number
+            # As well as the size to render in the correct size
+
+            base_filename = ""
+            width = 0
+            height = 0
+
             for f in os.listdir(media_path + "\\" + time_path_list[i]):
 
                 if f[:4] == "Proj" and f[-3:].lower() == "jpg":
@@ -333,11 +349,16 @@ def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_r
                     base_filename = f[:-12]
                     break
 
-            ffmpegOpts = " -f image2 -r " + str(
+            # Options argument to pass to ffmpeg
+            ffmpeg_opts = " -f image2 -r " + str(
                 frame_rate) + " -start_number 00000001 -i " + base_filename + "%08d.jpg -s "\
                          + str(width) + "x" + str(height) + " -vcodec libx264 " + time_path_list[i]\
                          + "-timelapse.mp4"
-            os.system(ffmpegCommand + ffmpegOpts)
+
+            # Call the ffmpeg command with options
+            os.system(ffmpeg_command + ffmpeg_opts)
+
+            # Rename the created file and put it in the media folder
             os.rename(time_path_list[i] + "-timelapse.mp4", media_path + "\\" + time_path_list[i] + "-timelapse.mp4")
 
         else:
@@ -345,14 +366,22 @@ def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_r
 
 
 def set_time_time(time_path_list, pattern_list, tz):
+
+    # Method to interpret the time code of time lapse folders
+    # Each folder will be in the format:
+    # 2016.01.03_14.34.42
+    # Will make use of the pattern list an add in an entry for this pattern (already done in pattern_list initiation)
+
     time_list=[]
     for i in range(0, len(time_path_list)):
         time_path = time_path_list[i]
+
+        # Work through the pattern list trying to match the string to a pattern in the list
         for j in range(0, len(pattern_list)):
             try:
                 time_iso = arrow.get(time_path, pattern_list[j][0]).replace(tzinfo=tz)
                 time_epoch = int(time_iso.timestamp)
-                time_path_list.insert(len(time_path_list), MediaObject(time_epoch, time_path + ".mp4", 0, 0, tz))
+                time_list.insert(len(time_path_list), MediaObject(time_epoch, time_path + "-timelapse.mp4", 0, 0, tz))
             except arrow.parser.ParserError:
                 if j == len(pattern_list) - 1:
                     print "There was an error matching the time for video", time_path + ".mp4"
@@ -444,4 +473,4 @@ def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time,
     # ---------------------------------- KML ----------------------------------
 
     # Create the Media KML
-    kml_creator.create_media_kml(root_path, photo_list, video_list, time_list, dwell_time, tz)
+    kml_creator.create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time, tz)
