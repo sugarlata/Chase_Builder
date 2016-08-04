@@ -61,7 +61,7 @@ def create_radar_kml(frame_db, root_path, radar_path, tz):
 
             # When the over-layed image will be shown and hidden
             ground[i].timespan.begin = arrow.get(int(frame_list[i].get_time()))
-            ground[i].timespan.end = arrow.get(int(frame_list[i].get_time()) + (60*6))
+            ground[i].timespan.end = arrow.get(int(frame_list[i].get_end_time()))
 
     # Change the folder to the root path, this is where the kml file will be saved
     os.chdir(root_path)
