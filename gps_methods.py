@@ -1,5 +1,5 @@
 import arrow
-from xml.etree import ElementTree as et
+from xml.etree import ElementTree as Et
 from gps_points import GPSPoint
 
 
@@ -12,7 +12,7 @@ def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Fil
 
     f = open(gps_kml_filename, 'r')
     fr = f.read()
-    kml_tree = et.fromstring(fr)
+    kml_tree = Et.fromstring(fr)
 
     track = kml_tree.find(".//{http://www.google.com/kml/ext/2.2}Track")
 

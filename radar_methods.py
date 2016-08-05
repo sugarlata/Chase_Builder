@@ -6,19 +6,19 @@ from radar_overlays import RadarFrameOffline
 
 
 # Function to return nearest IDRs according to gps_track
-def get_near_idr_list(gps_track, tz):
+def get_near_idr_list(gps_track):
     print "------------------------------------------------------------"
     print ""
     print "Now matching IDR Codes to the GPS Track. This may take some time"
 
     # Create list of IDR Codes to match up and see how far away they are.
 
-    radar_working_list = ['IDR773', 'IDR093', 'IDR633', 'IDR783', 'IDR423', 'IDR073', 'IDR413', 'IDR363', 'IDR193', 'IDR173',
-                'IDR393', 'IDR733', 'IDR243', 'IDR163', 'IDR153', 'IDR753', 'IDR223', 'IDR293', 'IDR563', 'IDR723',
-                'IDR253', 'IDR233', 'IDR053', 'IDR443', 'IDR083', 'IDR673', 'IDR503', 'IDR663', 'IDR063', 'IDR623',
-                'IDR533', 'IDR283', 'IDR483', 'IDR693', 'IDR273', 'IDR333', 'IDR703', 'IDR043', 'IDR713', 'IDR323',
-                'IDR303', 'IDR033', 'IDR643', 'IDR313', 'IDR553', 'IDR463', 'IDR403', 'IDR493', 'IDR143', 'IDR023',
-                'IDR683', 'IDR523', 'IDR763']
+    radar_working_list = ['IDR773', 'IDR093', 'IDR633', 'IDR783', 'IDR423', 'IDR073', 'IDR413', 'IDR363', 'IDR193',
+                          'IDR173', 'IDR393', 'IDR733', 'IDR243', 'IDR163', 'IDR153', 'IDR753', 'IDR223', 'IDR293',
+                          'IDR563', 'IDR723', 'IDR253', 'IDR233', 'IDR053', 'IDR443', 'IDR083', 'IDR673', 'IDR503',
+                          'IDR663', 'IDR063', 'IDR623', 'IDR533', 'IDR283', 'IDR483', 'IDR693', 'IDR273', 'IDR333',
+                          'IDR703', 'IDR043', 'IDR713', 'IDR323', 'IDR303', 'IDR033', 'IDR643', 'IDR313', 'IDR553',
+                          'IDR463', 'IDR403', 'IDR493', 'IDR143', 'IDR023', 'IDR683', 'IDR523', 'IDR763']
 
     # Create lists for suggestions of Radars
     radar64suggests = []
@@ -34,7 +34,7 @@ def get_near_idr_list(gps_track, tz):
     radar_db = RadarDB('IDR023')
 
     print "Processing 256km Radar sites"
-    for i in range(0,len(gps_track)):
+    for i in range(0, len(gps_track)):
         # Iterate through GPS Points
         lat1 = gps_track[i].get_location()[1]
         lon1 = gps_track[i].get_location()[0]
@@ -45,7 +45,7 @@ def get_near_idr_list(gps_track, tz):
             lat2 = radar_db.get_location(radar_working_list[j-k])[0]
             lon2 = radar_db.get_location(radar_working_list[j-k])[1]
 
-            distance = int(gps_methods.get_distance_from_coordinates(lat1,lon1,lat2,lon2))/1000
+            distance = int(gps_methods.get_distance_from_coordinates(lat1, lon1, lat2, lon2))/1000
 
             if distance < 362:  # sqrt(2)*max distance which is 256kms. This allows for corners of the radar
                 radar256suggests.insert(len(radar256suggests), radar_working_list[j - k])
@@ -140,7 +140,7 @@ def get_near_idr_list(gps_track, tz):
     return radar_set
 
 
-def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, root_path, tz):
+def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time):
     radar_idr_paths = [x[0] for x in os.walk(radar_path)]
     radar_idr_paths.remove(radar_path)
     frame_db = []
@@ -148,6 +148,9 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, root_
     for j in range(0, len(radar_idr_paths)):
         idr_frame_db = []
         frame_filename_list = os.listdir(radar_idr_paths[j])
+
+        if radar_set.count(radar_idr_paths[j].split('\\')[-1:][0]) > 0:
+            continue
 
         # Check if this folder is empty, if so then skip it.
         if len(frame_filename_list) == 0:
@@ -158,7 +161,7 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, root_
             pattern = "YYYYMMDDHHmm"
             time = arrow.get(filename.split('.')[2], pattern)
             epoch = time.timestamp
-            if int(epoch) > int(start_time) and int(epoch) < int(end_time):
+            if int(start_time) < int(epoch) < int(end_time):
                 idr_frame_db.append(RadarFrameOffline(frame_filename_list[i]))
 
         frame_db.append(idr_frame_db)
@@ -174,7 +177,5 @@ def correct_radar_blink(frames_db):
     for i in range(len(frames_db)):
         for j in range(0, len(frames_db[i])-1):
             frames_db[i][j].set_end_time(frames_db[i][j+1].get_time())
-
-
 
     return frames_db

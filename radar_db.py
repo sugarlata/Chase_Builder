@@ -1,64 +1,60 @@
 import math
 
+
 class RadarDB:
 
     __title__ = str()
     __updateInterval__ = int()
-    __location__ = float(),float()
-    __64__ = bool()
-    __128__ = bool()
-    __256__ = bool()
-    __512__ = bool()
-    __doppler__ = bool()
-    __nsew64__ = float(),float(),float(),float()
-    __nsew128__ = float(),float(),float(),float()
-    __nsew256__ = float(),float(),float(),float()
-    __nsew512__ = float(),float(),float(),float()
+    __location__ = float(), float()
+    __64__ = False
+    __128__ = True
+    __256__ = True
+    __512__ = True
+    __doppler__ = False
+    __nsew64__ = float(), float(), float(), float()
+    __nsew128__ = float(), float(), float(), float()
+    __nsew256__ = float(), float(), float(), float()
+    __nsew512__ = float(), float(), float(), float()
 
     def __init__(self, idr_code):
         idr = str(idr_code[:-1]) + "3"
         self.select_radar(idr)
 
-    def calculate_nsew_s(self, idr_code):  # Function to return the radar bounds for KML File
+    def calculate_nsew_s(self):  # Function to return the radar bounds for KML File
 
-        def calculate_nsew(lat,lon, distance):
+        def calculate_nsew(latitude, longitude, distance):
 
             d = float(distance)
             r = float(6371)
 
             be = float(math.radians(0))
-            lat2 = math.asin(math.sin(lat) * math.cos(d / r) + math.cos(lat) * math.sin(d / r) * math.cos(be))
-            # lon2=lon+math.atan2(math.sin(be)*math.sin(d/R)*math.cos(lat),math.cos(d/R)-math.sin(lat)*math.sin(lat2))
+            lat2 = math.asin(math.sin(latitude) * math.cos(d / r) + math.cos(latitude) * math.sin(d / r) * math.cos(be))
+
             lat2 = math.degrees(lat2)
-            # lon2=math.degrees(lon2)
+
             north = lat2
 
             be = float(math.radians(90))
-            lat2 = math.asin(math.sin(lat) * math.cos(d / r) + math.cos(lat) * math.sin(d / r) * math.cos(be))
-            lon2 = lon + math.atan2(math.sin(be) * math.sin(d / r) * math.cos(lat),
-                                    math.cos(d / r) - math.sin(lat) * math.sin(lat2))
-            # lat2 = math.degrees(lat2)
+            lat2 = math.asin(math.sin(latitude) * math.cos(d / r) + math.cos(latitude) * math.sin(d / r) * math.cos(be))
+            lon2 = longitude + math.atan2(math.sin(be) * math.sin(d / r) * math.cos(latitude),
+                                          math.cos(d / r) - math.sin(latitude) * math.sin(lat2))
             lon2 = math.degrees(lon2)
             east = lon2
 
             be = float(math.radians(180))
-            lat2 = math.asin(math.sin(lat) * math.cos(d / r) + math.cos(lat) * math.sin(d / r) * math.cos(be))
-            # lon2=lon+math.atan2(math.sin(be)*math.sin(d/R)*math.cos(lat),math.cos(d/R)-math.sin(lat)*math.sin(lat2))
+            lat2 = math.asin(math.sin(latitude) * math.cos(d / r) + math.cos(latitude) * math.sin(d / r) * math.cos(be))
             lat2 = math.degrees(lat2)
-            # lon2=math.degrees(lon2)
             south = lat2
 
             be = float(math.radians(270))
-            lat2 = math.asin(math.sin(lat) * math.cos(d / r) + math.cos(lat) * math.sin(d / r) * math.cos(be))
-            lon2 = lon + math.atan2(math.sin(be) * math.sin(d / r) * math.cos(lat),
-                                    math.cos(d / r) - math.sin(lat) * math.sin(lat2))
-            lat2 = math.degrees(lat2)
+            lat2 = math.asin(math.sin(latitude) * math.cos(d / r) + math.cos(latitude) * math.sin(d / r) * math.cos(be))
+            lon2 = longitude + math.atan2(math.sin(be) * math.sin(d / r) * math.cos(latitude),
+                                          math.cos(d / r) - math.sin(latitude) * math.sin(lat2))
             lon2 = math.degrees(lon2)
             west = lon2
 
             return north, south, east, west
 
-        idr = str(idr_code[:-1]) + "3"
         distance64 = 64
         distance128 = 128
         distance256 = 256
@@ -70,13 +66,12 @@ class RadarDB:
         lat = float(math.radians(lat))
         lon = float(math.radians(lon))
 
-        self.__nsew64__ = calculate_nsew(lat,lon,distance64)
-        self.__nsew128__ = calculate_nsew(lat,lon,distance128)
-        self.__nsew256__ = calculate_nsew(lat,lon,distance256)
-        self.__nsew512__ = calculate_nsew(lat,lon,distance512)
+        self.__nsew64__ = calculate_nsew(lat, lon, distance64)
+        self.__nsew128__ = calculate_nsew(lat, lon, distance128)
+        self.__nsew256__ = calculate_nsew(lat, lon, distance256)
+        self.__nsew512__ = calculate_nsew(lat, lon, distance512)
 
-
-    def select_radar(self,idr):
+    def select_radar(self, idr):
         if idr == 'IDR773':
             self.__title__ = 'Warruwi'
             self.__updateInterval__ = 6
@@ -555,7 +550,7 @@ class RadarDB:
             self.__512__ = True
             self.__doppler__ = True
 
-        self.calculate_nsew_s(idr)
+        self.calculate_nsew_s()
 
     def get_doppler(self, idr_code):
         idr = str(idr_code[:-1]) + "3"
@@ -593,13 +588,13 @@ class RadarDB:
         return self.__updateInterval__
 
     def get_nsew(self, idr_code):
-        if idr_code[-1]=="2":
+        if idr_code[-1] == "2":
             return self.__nsew256__
-        elif idr_code[-1]=="I":
+        elif idr_code[-1] == "I":
             return self.__nsew128__
-        elif idr_code[-1]=="1":
+        elif idr_code[-1] == "1":
             return self.__nsew512__
-        elif idr_code[-1]=="3":
+        elif idr_code[-1] == "3":
             return self.__nsew128__
-        elif idr_code[-1]=="4":
+        elif idr_code[-1] == "4":
             return self.__nsew64__

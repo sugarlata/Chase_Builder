@@ -1,9 +1,12 @@
 from radar_db import RadarDB
+from gui import MainGUI
+from gui import TrimGui
 import kml_creator as kml_creator
 import gps_methods as gps
 import radar_methods as radar_methods
 import radar_download_frames as radar_download_frames
 import media_methods as media_methods
+import Tkinter as tk
 
 
 # ---------------------------------- Initialisation ----------------------------------
@@ -27,10 +30,19 @@ ffmpeg_location = r"C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmp
 download_radar_module_enabled = False
 correct_radar_blink_tf = True
 
+# ---------------------------------- GUI Initialise ----------------------------------
+
+root = tk.Tk()
+gui = MainGUI(root)
+root.mainloop()
+
+exit()
+
+
 # ---------------------------------- GPS ----------------------------------
 
 # Open the KML File
-gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename,tz)
+gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename, tz)
 
 # Show GUI to get start time and end time
 
@@ -42,23 +54,22 @@ gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename,tz)
 radar_db = RadarDB('IDR023')
 
 # Identify local Radars along the track
-radar_set = radar_methods.get_near_idr_list(gps_track, tz)
+radar_set = radar_methods.get_near_idr_list(gps_track)
 
 # If public, skip to make radar list from Files
 # If private, check website for frames and that they are downloaded
 
 if download_radar_module_enabled:
-    frames_db = radar_download_frames.get_online_frames(radar_set, radar_path, start_time, end_time, root_path, tz)
+    frames_db = radar_download_frames.get_online_frames(radar_set, radar_path, start_time, end_time, root_path)
 else:
-    frames_db = radar_methods.get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, root_path, tz)
+    frames_db = radar_methods.get_local_radar_frames_db(radar_set, radar_path, start_time, end_time)
 
 if correct_radar_blink_tf:
     radar_methods.correct_radar_blink(frames_db)
 
 # Create KML File
-kml_creator.create_radar_kml(frames_db, root_path, radar_path,tz)
+kml_creator.create_radar_kml(frames_db, root_path, radar_path)
 
-exit()
 # ---------------------------------- Media ----------------------------------
 
 # Check that the media path exists
@@ -72,9 +83,9 @@ else:
     print "------------------------------------------------------------"
 
 
-# TODO Photos and Video, and Time lapse, instead of using file names use address
 # TODO GUI Module
 
+# TODO Create Proper Icon and convert to base64 encoded with zlib and base64
 # TODO Create TZ selector, default can be selected (saved in data file)
 # TODO Troubleshoot time code for videos
 

@@ -3,6 +3,7 @@ from win32api import GetSystemMetrics
 import PIL.Image
 import PIL.ExifTags
 import arrow
+import arrow.parser
 import math
 import os
 import gps_methods
@@ -40,7 +41,8 @@ def get_photo_list(media_path):
 def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, tz):
 
     # Create two lists, one that will have photo objects, the other is a list of file names that could not be
-    # time matched. This list will later be used to manually set the time for them and added as photo objects into the first list
+    # time matched. This list will later be used to manually set the time for them and added as photo objects into the
+    # first list.
     # This will happen in a different method however.
     rejected_photo_filename_list = []
     exif_time_pattern = 'YYYY:MM:DD HH:mm'
@@ -61,6 +63,7 @@ def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, t
                 # Depending on the fail, return (print) the particular error.
                 PIL.ExifTags.TAGS[k]: v
                 for k, v in image._getexif().items()
+
                 if k in PIL.ExifTags.TAGS
                 }
             picture_time_raw = exif['DateTime']
@@ -113,10 +116,8 @@ def set_media_location(media_list, gps_track):
         # After each gps point iteration, the difference between the media time and gps point should decrease
         # Once this hits a minimum, then the time is selected and the gps location from that time code is used.
         last_difference = 259200
-        first_run = True
-        max_difference = 259200
 
-        for j in range(0,len(gps_track)):
+        for j in range(0, len(gps_track)):
 
             # Cycle through the GPS points
 
@@ -132,7 +133,6 @@ def set_media_location(media_list, gps_track):
                 # This corresponds to an estimation of longest chase possible in seconds. (3 Days)
                 gps_point = gps_track[j-1].get_location()
                 media_list[i].set_location(gps_point[1], gps_point[0])
-                last_difference = 259200
                 break
 
             else:
@@ -173,14 +173,14 @@ def set_resized_photos(media_path, photo_list):
 
             # Check if there is already a resized version, if not resize and save image in a new file with prefix r-
             # Amend file name in the photo_list objects
-            if os.path.isfile(image_filename_resized) == False:
-                scWidth = scale * width * .95
-                scHeight = scale * height * .95
+            if not os.path.isfile(image_filename_resized):
+                sc_width = scale * width * .95
+                sc_height = scale * height * .95
 
-                scHeight = int(round(scHeight))
-                scWidth = int(round(scWidth))
+                sc_height = int(round(sc_height))
+                sc_width = int(round(sc_width))
 
-                image = image.resize((scWidth, scHeight), PIL.Image.ANTIALIAS)
+                image = image.resize((sc_width, sc_height), PIL.Image.ANTIALIAS)
 
                 image.save(media_path + "\\" + image_filename_resized)
                 image_filename = image_filename_resized
@@ -243,7 +243,8 @@ def get_video_list(media_path):
     video_filename_list = []
     for x in os.listdir(media_path):
 
-        if x.lower()[-3:] == "mov" or x.lower()[-3:] == "avi" or x.lower()[-3:] == "mpg" or x.lower()[-3:] == "mp4" or x.lower()[-3:] == "mpeg":
+        if x.lower()[-3:] == "mov" or x.lower()[-3:] == "avi" or x.lower()[-3:] == "mpg" or x.lower()[-3:] == "mp4" or \
+                        x.lower()[-3:] == "mpeg":
             if x.lower()[:2] != "r-":
                 # Ignore anything with r- in it, although this shouldn't be a problem for video media
                 video_filename_list.insert(len(video_filename_list), x)
@@ -260,7 +261,6 @@ def set_video_time(video_filename_list, pattern_list, tz):
     # Try and work out the time from the filename, using different patterns of time determines by the pattern_list
     # If this works, add a media object into video_list
 
-
     video_list = []
     rejected_video_filename_list = []
     for i in range(0, len(video_filename_list)):
@@ -270,7 +270,7 @@ def set_video_time(video_filename_list, pattern_list, tz):
         for j in range(0, len(pattern_list)):
             # Strip string in pattern list
             filename = filename.replace(pattern_list[j][1], '')
-            if filename[-10:]=="-timelapse":
+            if filename[-10:] == "-timelapse":
                 break
 
             try:
@@ -280,15 +280,15 @@ def set_video_time(video_filename_list, pattern_list, tz):
                 video_list.insert(len(video_list), MediaObject(video_epoch, video_filename_list[i], 0, 0, tz))
                 break
             except arrow.parser.ParserError:
-                if j==len(pattern_list)-1:
-                    #If it fails and can't find a time, add it to a rejected list for user to determine manually.
-                    print "Could not match time for" , filename
+                if j == len(pattern_list)-1:
+                    # If it fails and can't find a time, add it to a rejected list for user to determine manually.
+                    print "Could not match time for", filename
                     rejected_video_filename_list.insert(len(rejected_video_filename_list), video_filename_list[i])
 
     return video_list, rejected_video_filename_list
 
 
-def get_time_list(media_path, pattern_list, tz):
+def get_time_list(media_path, pattern_list):
 
     # Read through the media folder for directories, if there are directories that can be time coded
     # successfully, assume that they are time lapse folders, add to the time_path_list
@@ -298,12 +298,11 @@ def get_time_list(media_path, pattern_list, tz):
     for i in range(0, len(media_paths)):
         time_path = media_paths[i].split('\\')[-1]
 
-        if time_path=="Media":
+        if time_path == "Media":
             continue
 
         for j in range(0, len(pattern_list)):
             try:
-                time_iso = arrow.get(time_path, pattern_list[j][0]).replace(tzinfo=tz)
                 time_path_list.insert(len(time_path_list), time_path)
             except arrow.parser.ParserError:
                 if j == len(pattern_list) - 1:
@@ -321,7 +320,7 @@ def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_r
     # Go through each time coded folder
     for i in range(0, len(time_path_list)):
         # Check if there's already a time lapse file created, if not then:
-        if (os.path.isfile(media_path + "\\" + time_path_list[i] + "-timelapse.mp4")) != True:
+        if not os.path.isfile(media_path + "\\" + time_path_list[i] + "-timelapse.mp4"):
 
             # Need to create an ffmpeg command call in two parts
             # First part will hold the ffmpeg executable
@@ -352,8 +351,8 @@ def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_r
             # Options argument to pass to ffmpeg
             ffmpeg_opts = " -f image2 -r " + str(
                 frame_rate) + " -start_number 00000001 -i " + base_filename + "%08d.jpg -s "\
-                         + str(width) + "x" + str(height) + " -vcodec libx264 " + time_path_list[i]\
-                         + "-timelapse.mp4"
+                + str(width) + "x" + str(height) + " -vcodec libx264 " + time_path_list[i]\
+                + "-timelapse.mp4"
 
             # Call the ffmpeg command with options
             os.system(ffmpeg_command + ffmpeg_opts)
@@ -372,7 +371,7 @@ def set_time_time(time_path_list, pattern_list, tz):
     # 2016.01.03_14.34.42
     # Will make use of the pattern list an add in an entry for this pattern (already done in pattern_list initiation)
 
-    time_list=[]
+    time_list = []
     for i in range(0, len(time_path_list)):
         time_path = time_path_list[i]
 
@@ -392,7 +391,7 @@ def set_time_time(time_path_list, pattern_list, tz):
 def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz):
 
     # List of patterns for matching time codes. Second item in list is string for removal
-    pattern_list = [('YYYY:MM:DD HH:mm:ss', ''), ('YYYYMMDD_HHmmss','VID_'),
+    pattern_list = [('YYYY:MM:DD HH:mm:ss', ''), ('YYYYMMDD_HHmmss', 'VID_'),
                     ('YYYY-MM-DD HH.mm.ss', ''), ('YYYY.MM.DD_HH.mm.ss', '')]
 
     # Set the Frame Rate
@@ -419,7 +418,7 @@ def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time,
                                                                     end_time, tz)
     # Set the time for leftover photos manually
     # TODO Write code for this gui
-    if len(rejected_photos_filename_list)!=0:
+    if len(rejected_photos_filename_list) != 0:
         print ""
 
     # Set the location for each picture
@@ -453,7 +452,7 @@ def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time,
     # ---------------------------------- Time Lapse ----------------------------------
 
     # Get Time lapse List
-    time_path_list = get_time_list(media_path, pattern_list, tz)
+    time_path_list = get_time_list(media_path, pattern_list)
 
     # Create the video
     create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_rate)
@@ -473,4 +472,4 @@ def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time,
     # ---------------------------------- KML ----------------------------------
 
     # Create the Media KML
-    kml_creator.create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time, tz)
+    kml_creator.create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time)

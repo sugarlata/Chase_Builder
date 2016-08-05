@@ -12,7 +12,7 @@ class GPSPoint:
     __timeLocal__ = str()
 
     # Upon creation, will need the epoch, location, height and timezone
-    def __init__(self,epoch,lat,lon, height,tz):
+    def __init__(self, epoch, lat, lon, height, tz):
         self.__timePoint__ = epoch
         self.__lat__ = lat
         self.__lon__ = lon
