@@ -4,6 +4,7 @@ import zlib
 import tempfile
 import icon_data
 import tkFont
+import arrow
 from threading import Thread
 from tkFileDialog import askopenfilename
 from tkFileDialog import askdirectory
@@ -68,7 +69,8 @@ class MainGUI(Tk.Frame):
 
         def get_root_button():
             root_path = askdirectory(title="Please select the Chase Root Folder", initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
-            if not root_path=="":
+            if not root_path == "":
+                self.str_root_folder.set(root_path.replace('/', "\\"))
                 self.grandparent.root_path = root_path
                 self.grandparent.radar_path = self.grandparent.root_path + r"\Radar"
                 self.grandparent.media_path = self.grandparent.root_path + r"\Media"
@@ -86,11 +88,18 @@ class MainGUI(Tk.Frame):
                                                  **file_open_options)
 
             if not gps_track_filename == "":
+                self.str_gps_file.set(gps_track_filename.split('/')[-1])
                 self.grandparent.gps_track_filename = gps_track_filename
                 self.grandparent.gps_load_track()
+                start_time = arrow.get(self.grandparent.start_time)
+                end_time = arrow.get(self.grandparent.end_time)
+                tz = self.grandparent.tz
+                self.str_gps_start.set(start_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
+                self.str_gps_end.set(end_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
                 button_open_gps_file.config(state=DISABLED)
                 button_trim_gps.config(state=NORMAL)
                 button_identify_radars.config(state=NORMAL)
+                button_find_media.config(state=NORMAL)
 
         def trim_gps():
             pass
@@ -111,7 +120,7 @@ class MainGUI(Tk.Frame):
             button_manually_select_radar.config(state=DISABLED)
             button_process_radar.config(state=DISABLED)
             self.grandparent.process_radar()
-            if correct_blink.get() == 1:
+            if self.correct_blink.get() == 1:
                 self.grandparent.correct_blink()
 
             button_create_radar_kml.config(state=NORMAL)
@@ -128,6 +137,15 @@ class MainGUI(Tk.Frame):
 
         def create_media_kml():
             pass
+
+        self.str_root_folder = StringVar()
+        self.str_gps_file = StringVar()
+        self.str_gps_start = StringVar()
+        self.str_gps_end = StringVar()
+
+        self.radar_offline = IntVar()
+        self.correct_blink = IntVar()
+        self.geocode_parse = IntVar()
 
         frame_main = Frame(self.parent)
         frame_main.pack(fill=BOTH, expand=True, pady=5)
@@ -160,8 +178,8 @@ class MainGUI(Tk.Frame):
         frame_root_folder = Frame(frame_general_detail)
         frame_root_folder.pack()
 
-        label_root_folder = Label(frame_root_folder, text='Root Folder: ')
-        label_root_folder.pack()
+        label_root_folder = Label(frame_root_folder, textvariable=self.str_root_folder)
+        label_root_folder.pack(side=LEFT)
 
         frame_gps_detail = Frame(frame_detail, bd=2, relief=RIDGE)
         frame_gps_detail.pack(side=LEFT, padx=5, pady=1, fill=BOTH)
@@ -176,12 +194,18 @@ class MainGUI(Tk.Frame):
         frame_gps_finish = Frame(frame_gps_detail)
         frame_gps_finish.pack()
 
-        label_gps_file = Label(frame_gps_file, text='GPS Filename: ')
-        label_gps_file.pack()
-        label_gps_start = Label(frame_gps_start, text='GPS Start Time: ')
-        label_gps_start.pack()
-        label_gps_finish = Label(frame_gps_finish, text='GPS Finish Time: ')
-        label_gps_finish.pack()
+        label_gps_file = Label(frame_gps_file, textvariable=self.str_gps_file)
+        label_gps_file.pack(side=LEFT)
+
+        label_gps_start_title = Label(frame_gps_start, text='GPS Start Time: ')
+        label_gps_start_title.pack(side=LEFT)
+        label_gps_start = Label(frame_gps_start, textvariable=self.str_gps_start)
+        label_gps_start.pack(side=LEFT)
+
+        label_gps_finish_title = Label(frame_gps_finish, text='GPS Finish Time: ')
+        label_gps_finish_title.pack(side=LEFT)
+        label_gps_finish = Label(frame_gps_finish, textvariable=self.str_gps_end)
+        label_gps_finish.pack(side=LEFT)
 
         frame_media_detail = Frame(frame_detail, bd=2, relief=RIDGE)
         frame_media_detail.pack(side=LEFT, padx=5, pady=1, fill=BOTH)
@@ -189,8 +213,6 @@ class MainGUI(Tk.Frame):
         label_media_detail = Label(frame_media_detail, text='Media Details')
         label_media_detail.pack(padx=5, pady=1)
 
-        frame_media_file = Frame(frame_media_detail)
-        frame_media_file.pack(pady=2)
         frame_media_photo = Frame(frame_media_detail)
         frame_media_photo.pack()
         frame_media_video = Frame(frame_media_detail)
@@ -198,8 +220,6 @@ class MainGUI(Tk.Frame):
         frame_media_time = Frame(frame_media_detail)
         frame_media_time.pack()
 
-        label_media_folder = Label(frame_media_file, text='Media Folder: ')
-        label_media_folder.pack()
         label_media_photo = Label(frame_media_photo, text='Photos: ')
         label_media_photo.pack()
         label_media_video = Label(frame_media_video, text='Videos: ')
@@ -214,14 +234,11 @@ class MainGUI(Tk.Frame):
         button_help.pack(padx=5, pady=1)
         button_set_tz = Button(frame_settings, text="Set Timezone", command=set_timezone)
         button_set_tz.pack(padx=5, pady=1)
-        radar_offline = IntVar()
-        correct_blink = IntVar()
-        geocode_parse = IntVar()
-        checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar", variable=radar_offline)
+        checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar", variable=self.radar_offline)
         checkbox_radar_offline.pack(padx=5, pady=1)
-        checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames", variable=correct_blink)
+        checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames", variable=self.correct_blink)
         checkbox_correct_blink.pack(padx=5, pady=1)
-        checkbox_geocode_parse = Checkbutton(frame_settings, text="Get Geocoded Locations)", variable=geocode_parse)
+        checkbox_geocode_parse = Checkbutton(frame_settings, text="Get Geo-coded Locations", variable=self.geocode_parse)
         checkbox_geocode_parse.pack(padx=5, pady=1)
 
         frame_gps_action = Frame(frame_action, bd=2, relief=RIDGE)

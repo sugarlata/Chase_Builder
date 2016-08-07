@@ -22,12 +22,11 @@ class MainApplication:
     radar_set = []
     download_radar_module = False
     frames_db=[]
+    tz = "Australia/Melbourne"
 
     def __init__(self):
 
         # ---------------------------------- Initialisation ----------------------------------
-
-        self.tz = "Australia/Melbourne"
 
         self.ffmpeg_location = r"C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmpeg.exe"
 

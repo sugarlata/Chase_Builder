@@ -55,6 +55,10 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
 
     # Create a GPSPoint object for each point in 'when' and 'coord'. Put this point in a list of points
 
+    tb.tb_update("")
+    tb.tb_update("Processing Points")
+    tb.tb_update("Please Wait")
+    tb.tb_update("")
     for i in range(0, len(when)):
         gps_p = GPSPoint(when[i], locations[i][0], locations[i][1], locations[i][2], tz)
         gps_points_list.insert(len(gps_points_list), gps_p)
@@ -62,7 +66,6 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     tb.tb_update(str(len(gps_points_list)) + " points were successfully imported")
     f.close()
     tb.tb_update("------------------------------------------------------------")
-
     tb.tb_update("")
 
     # Calculate the first and last time in the points list.
