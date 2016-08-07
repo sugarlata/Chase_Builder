@@ -3,9 +3,9 @@ from xml.etree import ElementTree as Et
 from gps_points import GPSPoint
 
 
-def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Filename
+def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML Filename
 
-    print "Opening Track KML and reading locations"
+    tb.tb_update("Opening Track KML and reading locations")
 
     # Open the KML file
     # Read the KML with lxml and put data into variable 'track'
@@ -23,7 +23,15 @@ def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Fil
     # In KML file, there are "When" tags and "Coord" tags.
     # Read line, if 'when tag' put in 'when' list. If 'coord' put in 'coord' list
 
+    # mid calculates how often to update the user on a percentage. 42 is suggested here, being the meaning of life
+
+    mid = (len(track))/42
+
     for i in range(0, len(track)):
+
+        # Update user on what percentage of the file has bee read, at selected intervals.
+        if round(float(i)/float(mid), 0) == float(i)/float(mid):
+            tb.tb_update(str(round(100*float(i)/float(len(track)), 2)) + "%")
 
         if track[i].tag[-4:] == "when":
             when.insert(len(when), arrow.get(str(track[i].text).split(' ')[0]).format('X'))
@@ -34,13 +42,15 @@ def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Fil
 
             locations.insert(len(locations), (lat, lon, height))
 
-    print "Completed"
+    tb.tb_update("")
+    tb.tb_update("Completed")
+    tb.tb_update("")
 
     # If length of when list is different to coords list, then throw an error
 
     if len(when) != len(locations):
-        print "There was an error in your KML file"
-        print "Please start again with another KML file"
+        tb.tb_update("There was an error in your KML file")
+        tb.tb_update("Please start again with another KML file")
         exit()
 
     # Create a GPSPoint object for each point in 'when' and 'coord'. Put this point in a list of points
@@ -49,11 +59,11 @@ def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Fil
         gps_p = GPSPoint(when[i], locations[i][0], locations[i][1], locations[i][2], tz)
         gps_points_list.insert(len(gps_points_list), gps_p)
 
-    print str(len(gps_points_list)) + " points were successfully imported"
+    tb.tb_update(str(len(gps_points_list)) + " points were successfully imported")
     f.close()
-    print "------------------------------------------------------------"
+    tb.tb_update("------------------------------------------------------------")
 
-    print ""
+    tb.tb_update("")
 
     # Calculate the first and last time in the points list.
     # Assuming that the KML file is created in Chronological order, this is the first and last entry.
@@ -61,10 +71,10 @@ def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Fil
 
     start_time = gps_points_list[0].get_time()
     end_time = gps_points_list[len(gps_points_list) - 1].get_time()
-    print "The track starts from ", arrow.get(start_time).to(tz).format('YYYY-MM-DD HH:mm:ss')
-    print "and finishes at       ", arrow.get(end_time).to(tz).format('YYYY-MM-DD HH:mm:ss')
-    print ""
-    print "------------------------------------------------------------"
+    tb.tb_update("The track starts from " + arrow.get(start_time).to(tz).format('YYYY-MM-DD HH:mm:ss'))
+    tb.tb_update("and finishes at       " + arrow.get(end_time).to(tz).format('YYYY-MM-DD HH:mm:ss'))
+    tb.tb_update("")
+    tb.tb_update("------------------------------------------------------------")
 
     # Return the gps points list, as well as the start time and end time
 
@@ -72,7 +82,7 @@ def get_gps_track_list(gps_kml_filename, tz):  # Function to get the GPS KML Fil
 
 
 def set_gps_kml():
-    print ""
+    pass
 
 
 def get_distance_from_coordinates(lat1, lon1, lat2, lon2):

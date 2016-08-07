@@ -6,10 +6,10 @@ from radar_overlays import RadarFrameOffline
 
 
 # Function to return nearest IDRs according to gps_track
-def get_near_idr_list(gps_track):
-    print "------------------------------------------------------------"
-    print ""
-    print "Now matching IDR Codes to the GPS Track. This may take some time"
+def get_near_idr_list(gps_track, tb):
+    tb.tb_update("------------------------------------------------------------")
+    tb.tb_update("")
+    tb.tb_update("Now matching IDR Codes to the GPS Track. This may take some time")
 
     # Create list of IDR Codes to match up and see how far away they are.
 
@@ -33,7 +33,7 @@ def get_near_idr_list(gps_track):
     # Create RadarDB object to put in codes and return locations
     radar_db = RadarDB('IDR023')
 
-    print "Processing 256km Radar sites"
+    tb.tb_update("Processing 256km Radar sites")
     for i in range(0, len(gps_track)):
         # Iterate through GPS Points
         lat1 = gps_track[i].get_location()[1]
@@ -49,7 +49,7 @@ def get_near_idr_list(gps_track):
 
             if distance < 362:  # sqrt(2)*max distance which is 256kms. This allows for corners of the radar
                 radar256suggests.insert(len(radar256suggests), radar_working_list[j - k])
-                print radar_working_list[j - k]
+                tb.tb_update(radar_working_list[j - k] + " Identified")
                 radar_working_list.remove(radar_working_list[j - k])
                 k += 1
             elif distance > 2500:
@@ -64,8 +64,8 @@ def get_near_idr_list(gps_track):
 
     # Iterate through working list for 128km suggestions
 
-    print ""
-    print "Processing 128km Radar sites"
+    tb.tb_update("")
+    tb.tb_update("Processing 128km Radar sites")
     for i in range(0, len(gps_track)):
         # Iterate through GPS Points
         lat1 = gps_track[i].get_location()[1]
@@ -81,7 +81,7 @@ def get_near_idr_list(gps_track):
 
             if distance < 181:  # sqrt(2)*max distance which is 256kms. This allows for corners of the radar
                 radar128suggests.insert(len(radar128suggests), radar_working_list[j - k])
-                print radar_working_list[j - k]
+                tb.tb_update(radar_working_list[j - k] + " Identified")
                 radar_working_list.remove(radar_working_list[j - k])
                 k += 1
 
@@ -89,8 +89,8 @@ def get_near_idr_list(gps_track):
 
     radar_working_list = list(radar128suggests)
 
-    print ""
-    print "Processing 64km Radar sites"
+    tb.tb_update("")
+    tb.tb_update("Processing 64km Radar sites")
     for i in range(0, len(gps_track)):
         # Iterate through GPS Points
         lat1 = gps_track[i].get_location()[1]
@@ -106,12 +106,16 @@ def get_near_idr_list(gps_track):
 
             if distance < 91:  # sqrt(2)*max distance which is 256kms. This allows for corners of the radar
                 radar64suggests.insert(len(radar64suggests), radar_working_list[j - k])
-                print radar_working_list[j - k]
+                tb.tb_update(radar_working_list[j - k] + " Identified")
                 radar_working_list.remove(radar_working_list[j - k])
                 k += 1
 
     radar_set = []
 
+    tb.tb_update("")
+    tb.tb_update("Cleaning up a little")
+    tb.tb_update("")
+    
     # Check to make sure that the radars exist (64km)
     if len(radar64suggests) != 0:
 
@@ -137,10 +141,18 @@ def get_near_idr_list(gps_track):
                 radar_rh = radar256suggests[i][:-1] + "2"
                 radar_set.insert(len(radar_set), radar_rh)
 
+    tb.tb_update("")
+    tb.tb_update("Completed Radar Identification")
+    tb.tb_update("")
+
     return radar_set
 
 
 def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time):
+
+    print ""
+    print "Creating database of local radars and interpreting time code"
+    print ""
     radar_idr_paths = [x[0] for x in os.walk(radar_path)]
     radar_idr_paths.remove(radar_path)
     frame_db = []
@@ -148,9 +160,6 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time):
     for j in range(0, len(radar_idr_paths)):
         idr_frame_db = []
         frame_filename_list = os.listdir(radar_idr_paths[j])
-
-        if radar_set.count(radar_idr_paths[j].split('\\')[-1:][0]) > 0:
-            continue
 
         # Check if this folder is empty, if so then skip it.
         if len(frame_filename_list) == 0:
@@ -166,6 +175,10 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time):
 
         frame_db.append(idr_frame_db)
 
+    print ""
+    print "Completed"
+    print ""
+    print frame_db
     return frame_db
 
 
@@ -174,8 +187,15 @@ def correct_radar_blink(frames_db):
     # Correct the blinking in radar frames. This is caused when the time between frames is not perfectly 6 minutes.
     # This causes the 6 min appearance of frames to cause blinking. This is corrected by resetting the end time of the
     # frame appearance to the start time of the frame following.
+    print ""
+    print "Correcting the blinking radar frames"
+    print ""
     for i in range(len(frames_db)):
         for j in range(0, len(frames_db[i])-1):
             frames_db[i][j].set_end_time(frames_db[i][j+1].get_time())
+
+    print ""
+    print "Completed"
+    print ""
 
     return frames_db

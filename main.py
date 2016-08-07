@@ -2,85 +2,100 @@ from radar_db import RadarDB
 from gui import MainGUI
 from gui import TrimGui
 import kml_creator as kml_creator
-import gps_methods as gps
+import gps_methods as gps_methods
 import radar_methods as radar_methods
 import radar_download_frames as radar_download_frames
 import media_methods as media_methods
 import Tkinter as tk
+import time
 
 
-# ---------------------------------- Initialisation ----------------------------------
+class MainApplication:
 
-gps_track_filename = r"C:\Users\Nathan\Desktop\16-01-03 Chase log\16-01-03 Echuca Area-trimmed.kml"
-root_path = r"C:\Users\Nathan\Desktop\16-01-03 Chase log"
+    tb=""
+    gps_track_filename = ""
+    root_path = ""
+    radar_path = ""
+    media_path = ""
+    gps_track, start_time, end_time = "", "", ""
+    radar_db = ""
+    radar_set = []
+    download_radar_module = False
+    frames_db=[]
 
-#gps_track_filename = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log\15-10-31 Chase Track-trimmed.kml"
-#root_path = r"C:\Users\Nathan\Desktop\15-10-31 Chase Log"
+    def __init__(self):
 
-#gps_track_filename = r"C:\Users\Nathan\Desktop\Chase 16-04-30\Track-trimmed.kml"
-#root_path = r"C:\Users\Nathan\Desktop\Chase 16-04-30"
+        # ---------------------------------- Initialisation ----------------------------------
 
-radar_path = root_path + r"\Radar"
-media_path = root_path + r"\Media"
+        self.tz = "Australia/Melbourne"
 
-tz = "Australia/Melbourne"
+        self.ffmpeg_location = r"C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmpeg.exe"
 
-ffmpeg_location = r"C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmpeg.exe"
+        self.download_radar_module_enabled = False
+        self.correct_radar_blink_tf = True
 
-download_radar_module_enabled = False
-correct_radar_blink_tf = True
+    def gui_main(self):
 
-# ---------------------------------- GUI Initialise ----------------------------------
+        # ---------------------------------- GUI Initialise ----------------------------------
 
-root = tk.Tk()
-gui = MainGUI(root)
-root.mainloop()
+        root = tk.Tk()
+        MainGUI(root, self)
+        root.mainloop()
 
-exit()
+        exit()
 
+    def set_tb(self, tb):
+        self.tb = tb
 
-# ---------------------------------- GPS ----------------------------------
+    def gps_load_track(self):
 
-# Open the KML File
-gps_track, start_time, end_time = gps.get_gps_track_list(gps_track_filename, tz)
+        # Open the KML File
 
-# Show GUI to get start time and end time
+        self.gps_track, self.start_time, self.end_time = gps_methods.get_gps_track_list(self.gps_track_filename, self.tz, self.tb)
 
-# Create the trimmed KML, update gpsTrack
+    def radar_get_local_idr_list(self):
 
-# ---------------------------------- Radar ----------------------------------
+        # Load Radar Database
+        self.radar_db = RadarDB('IDR023')
 
-# Load Radar Database
-radar_db = RadarDB('IDR023')
+        # Identify local Radars along the track
+        self.radar_set = radar_methods.get_near_idr_list(self.gps_track, self.tb)
 
-# Identify local Radars along the track
-radar_set = radar_methods.get_near_idr_list(gps_track)
+    def process_radar(self):
+        # If public, skip to make radar list from Files
+        # If private, check website for frames and that they are downloaded
 
-# If public, skip to make radar list from Files
-# If private, check website for frames and that they are downloaded
+        if self.download_radar_module:
+            self.frames_db = radar_download_frames.get_online_frames(self.radar_set, self.radar_path, self.start_time, self.end_time, self.root_path, self.tb)
+        else:
+            self.frames_db = radar_methods.get_local_radar_frames_db(self.radar_set, self.radar_path, self.start_time, self.end_time)
 
-if download_radar_module_enabled:
-    frames_db = radar_download_frames.get_online_frames(radar_set, radar_path, start_time, end_time, root_path)
-else:
-    frames_db = radar_methods.get_local_radar_frames_db(radar_set, radar_path, start_time, end_time)
+    def correct_blink(self):
+        # Correct the radar blink. See declaration for more information
+        radar_methods.correct_radar_blink(self.frames_db)
 
-if correct_radar_blink_tf:
-    radar_methods.correct_radar_blink(frames_db)
+    def create_radar_kml_file(self):
 
-# Create KML File
-kml_creator.create_radar_kml(frames_db, root_path, radar_path)
+        # Create KML File
+        kml_creator.create_radar_kml(self.frames_db, self.root_path, self.radar_path)
 
-# ---------------------------------- Media ----------------------------------
+    def something_else(self):
+        # ---------------------------------- Media ----------------------------------
 
-# Check that the media path exists
-if media_methods.check_media_path_exists(media_path):
-    media_methods.process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz)
-else:
-    print "------------------------------------------------------------"
-    print ""
-    print "No Media found for this chase"
-    print ""
-    print "------------------------------------------------------------"
+        # Check that the media path exists
+        if media_methods.check_media_path_exists(media_path):
+            media_methods.process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz)
+        else:
+            print "------------------------------------------------------------"
+            print ""
+            print "No Media found for this chase"
+            print ""
+            print "------------------------------------------------------------"
+
+if __name__ == '__main__':
+
+    main_app = MainApplication()
+    main_app.gui_main()
 
 
 # TODO GUI Module
