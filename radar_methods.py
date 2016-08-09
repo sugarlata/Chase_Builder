@@ -7,6 +7,9 @@ from radar_overlays import RadarFrameOffline
 
 # Function to return nearest IDRs according to gps_track
 def get_near_idr_list(gps_track, tb):
+
+
+    tb.tb_update("")
     tb.tb_update("------------------------------------------------------------")
     tb.tb_update("")
     tb.tb_update("Now matching IDR Codes to the GPS Track. This may take some time")
@@ -144,15 +147,21 @@ def get_near_idr_list(gps_track, tb):
     tb.tb_update("")
     tb.tb_update("Completed Radar Identification")
     tb.tb_update("")
+    tb.tb_update("------------------------------------------------------------")
+    tb.tb_update("")
 
     return radar_set
 
 
-def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time):
+def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
-    print ""
-    print "Creating database of local radars and interpreting time code"
-    print ""
+    tb.tb_update("")
+    tb.tb_update("------------------------------------------------------------")
+    tb.tb_update("")
+    tb.tb_update("Creating database of local radars and interpreting time code")
+    tb.tb_update("")
+    tb.tb_update("Please Wait...")
+
     radar_idr_paths = [x[0] for x in os.walk(radar_path)]
     radar_idr_paths.remove(radar_path)
     frame_db = []
@@ -175,10 +184,11 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time):
 
         frame_db.append(idr_frame_db)
 
-    print ""
-    print "Completed"
-    print ""
-    print frame_db
+    tb.tb_update("")
+    tb.tb_update("Completed")
+    tb.tb_update("")
+    tb.tb_update("------------------------------------------------------------")
+    tb.tb_update("")
     return frame_db
 
 

@@ -4,7 +4,11 @@ import os
 from radar_db import RadarDB
 
 
-def create_radar_kml(frame_db, root_path, radar_path):
+def create_radar_kml(frame_db, root_path, radar_path, tb):
+
+    tb.tb_update("")
+    tb.tb_update("Creating KML File")
+    tb.tb_update("")
 
     radar_db = RadarDB('IDR023')
     kml = simplekml.Kml()
@@ -69,6 +73,10 @@ def create_radar_kml(frame_db, root_path, radar_path):
 
     # Save the KML file
     kml.save("Radar.kml")
+
+    tb.tb_update("")
+    tb.tb_update("Finished Creating the Radar KML File")
+    tb.tb_update("")
 
 
 def create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time):

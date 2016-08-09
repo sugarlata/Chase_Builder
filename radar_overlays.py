@@ -18,6 +18,12 @@ class RadarFrameOnline:
     def get_time(self):
         return self.__time__
 
+    def set_end_time(self, time):
+        self.__end_time__ = time
+
+    def get_end_time(self):
+        return self.__end_time__
+
 
 class RadarFrameOffline:
 

@@ -23,6 +23,30 @@ class MainApplication:
     download_radar_module = False
     frames_db=[]
     tz = "Australia/Melbourne"
+    dl_place_names = False
+    photo_len = ""
+    video_len = ""
+    time_len = ""
+    photo_filename_list = []
+    video_filename_list = []
+    time_filename_list = []
+    photo_list = []
+    rejected_photos_filename_list = []
+    rejected_video_filename_list = []
+    video_list = []
+    time_path_list = []
+    time_list = []
+
+
+    # List of patterns for matching time codes. Second item in list is string for removal
+    pattern_list = [('YYYY:MM:DD HH:mm:ss', ''), ('YYYYMMDD_HHmmss', 'VID_'),
+                    ('YYYY-MM-DD HH.mm.ss', ''), ('YYYY.MM.DD_HH.mm.ss', '')]
+
+    # Set the Frame Rate for rendering time lapse videos
+    frame_rate = 25
+
+    # Set the time for media objects to dwell in google earth before disappearing (in minutes)
+    dwell_time = 45
 
     def __init__(self):
 
@@ -65,9 +89,11 @@ class MainApplication:
         # If private, check website for frames and that they are downloaded
 
         if self.download_radar_module:
-            self.frames_db = radar_download_frames.get_online_frames(self.radar_set, self.radar_path, self.start_time, self.end_time, self.root_path, self.tb)
+            self.frames_db = radar_download_frames.get_online_frames(self.radar_set, self.radar_path, self.start_time,
+                                                                     self.end_time, self.root_path, self.tb)
         else:
-            self.frames_db = radar_methods.get_local_radar_frames_db(self.radar_set, self.radar_path, self.start_time, self.end_time)
+            self.frames_db = radar_methods.get_local_radar_frames_db(self.radar_set, self.radar_path, self.start_time,
+                                                                     self.end_time, self.tb)
 
     def correct_blink(self):
         # Correct the radar blink. See declaration for more information
@@ -76,14 +102,45 @@ class MainApplication:
     def create_radar_kml_file(self):
 
         # Create KML File
-        kml_creator.create_radar_kml(self.frames_db, self.root_path, self.radar_path)
+        kml_creator.create_radar_kml(self.frames_db, self.root_path, self.radar_path, self.tb)
 
-    def something_else(self):
+    def find_media(self, str_photos, str_videos, str_time):
         # ---------------------------------- Media ----------------------------------
 
         # Check that the media path exists
-        if media_methods.check_media_path_exists(media_path):
-            media_methods.process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz)
+        if media_methods.check_media_path_exists(self.media_path):
+
+            # Get Photo List
+            self.photo_filename_list = media_methods.get_photo_list(self.media_path)
+            self.photo_len = len(self.photo_filename_list)
+            str_photos.set(self.photo_len)
+
+            # Get Photo Exif Data (time taken)
+            self.photo_list, self.rejected_photos_filename_list =\
+                media_methods.get_photo_exif_data(self.media_path, self.photo_filename_list, self.start_time,
+                                                  self.end_time, self.tz)
+
+            # Get video list
+            self.video_filename_list = media_methods.get_video_list(self.media_path)
+
+            # Get time from filename
+            self.video_list, self.rejected_video_filename_list =\
+                media_methods.set_video_time(self.video_filename_list, self.pattern_list, self.tz)
+            self.video_len = len(self.video_filename_list)
+            str_videos.set(self.video_len)
+
+            # Get Time lapse List
+            self.time_path_list = media_methods.get_time_list(self.media_path, self.pattern_list, self.tz)
+
+            # Create the video
+            media_methods.create_time_lapse_video(self.ffmpeg_location, self.media_path, self.time_path_list,
+                                                  self.frame_rate)
+
+            # Create db of videos and the time they were taken
+            self.time_list = media_methods.set_time_time(self.time_path_list, self.pattern_list, self.tz)
+            self.time_len = len(self.time_list)
+            str_time.set(self.time_len)
+
         else:
             print "------------------------------------------------------------"
             print ""
@@ -91,17 +148,49 @@ class MainApplication:
             print ""
             print "------------------------------------------------------------"
 
+    def create_media_kml(self):
+
+        # Set the location for each picture
+        self.photo_list = media_methods.set_media_location(self.photo_list, self.gps_track)
+
+        # Resize photos as necessary
+        media_methods.set_resized_photos(self.media_path, self.photo_list)
+
+        # Group Photos together
+        media_methods.set_media_groups(self.photo_list)
+
+        # Set the location for each video
+        self.video_list = media_methods.set_media_location(self.video_list, self.gps_track)
+
+        # Group Videos as necessary
+        media_methods.set_media_groups(self.video_list)
+
+        # Set the location for each video
+        self.time_list = media_methods.set_media_location(self.time_list, self.gps_track)
+
+        # Group videos as necessary
+        media_methods.set_media_groups(self.time_list)
+
+        # Create the Media KML
+        kml_creator.create_media_kml(self.root_path, self.media_path, self.photo_list, self.video_list, self.time_list,
+                                     self.dwell_time)
+
+
 if __name__ == '__main__':
+    try:
+        main_app = MainApplication()
+        main_app.gui_main()
+    except Exception, err:
+        print "A Significant Error has occurred and the program must exit"
+        print "Error Code:"
+        print str(err)
+        print "Please contact Nathan Sgarlata: nathan.sgarlata+chasebuilder@gmail.com for troubleshooting"
+        exit()
 
-    main_app = MainApplication()
-    main_app.gui_main()
 
-
-# TODO GUI Module
-
-# TODO Create Proper Icon and convert to base64 encoded with zlib and base64
 # TODO Create TZ selector, default can be selected (saved in data file)
 # TODO Troubleshoot time code for videos
+# TODO Do some testing to try and break program
 
 # TODO Edit Radar Frames to look nicer
 # TODO Create a GUI for manually selecting IDR Codes

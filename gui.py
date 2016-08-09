@@ -77,6 +77,7 @@ class MainGUI(Tk.Frame):
 
                 button_open_gps_file.config(state=NORMAL)
                 button_get_root.config(state=DISABLED)
+                button_set_tz.config(state=DISABLED)
 
                 checkbox_correct_blink.config(state=DISABLED)
                 checkbox_geocode_parse.config(state=DISABLED)
@@ -119,6 +120,10 @@ class MainGUI(Tk.Frame):
         def process_images():
             button_manually_select_radar.config(state=DISABLED)
             button_process_radar.config(state=DISABLED)
+            if self.radar_offline.get() == 0:
+                self.grandparent.download_radar_module = True
+            else:
+                self.grandparent.download_radar_module = False
             self.grandparent.process_radar()
             if self.correct_blink.get() == 1:
                 self.grandparent.correct_blink()
@@ -127,21 +132,28 @@ class MainGUI(Tk.Frame):
 
         def create_radar_kml():
             self.grandparent.create_radar_kml_file()
-            button_create_media_kml.config(state=DISABLED)
+            button_create_radar_kml.config(state=DISABLED)
 
         def find_media():
-            pass
+            self.grandparent.find_media(self.str_photos, self.str_videos, self.str_time)
+            button_create_media_kml.config(state=NORMAL)
+            button_find_media.config(state=DISABLED)
 
         def manual_time_find():
             pass
 
         def create_media_kml():
-            pass
+            self.grandparent.create_media_kml()
+            button_create_media_kml.config(state=DISABLED)
 
         self.str_root_folder = StringVar()
         self.str_gps_file = StringVar()
         self.str_gps_start = StringVar()
         self.str_gps_end = StringVar()
+
+        self.str_photos = StringVar()
+        self.str_videos = StringVar()
+        self.str_time = StringVar()
 
         self.radar_offline = IntVar()
         self.correct_blink = IntVar()
@@ -220,12 +232,19 @@ class MainGUI(Tk.Frame):
         frame_media_time = Frame(frame_media_detail)
         frame_media_time.pack()
 
-        label_media_photo = Label(frame_media_photo, text='Photos: ')
-        label_media_photo.pack()
-        label_media_video = Label(frame_media_video, text='Videos: ')
-        label_media_video.pack()
-        label_media_time = Label(frame_media_time, text='Time lapse: ')
-        label_media_time.pack()
+        label_media_photo_title = Label(frame_media_photo, text='Photos: ')
+        label_media_photo_title.pack(side=LEFT)
+        label_media_video_title = Label(frame_media_video, text='Videos: ')
+        label_media_video_title.pack(side=LEFT)
+        label_media_time_title = Label(frame_media_time, text='Time lapse: ')
+        label_media_time_title.pack(side=LEFT)
+
+        label_media_photo = Label(frame_media_photo, textvariable=self.str_photos)
+        label_media_photo.pack(side=LEFT)
+        label_media_video = Label(frame_media_video, textvariable=self.str_videos)
+        label_media_video.pack(side=LEFT)
+        label_media_time = Label(frame_media_time, textvariable=self.str_time)
+        label_media_time.pack(side=LEFT)
 
         frame_settings = Frame(frame_action, bd=2, relief=RIDGE)
         frame_settings.pack(side=LEFT, padx=5, pady=1, fill=Y)
@@ -235,6 +254,8 @@ class MainGUI(Tk.Frame):
         button_set_tz = Button(frame_settings, text="Set Timezone", command=set_timezone)
         button_set_tz.pack(padx=5, pady=1)
         checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar", variable=self.radar_offline)
+        self.radar_offline.set(1)
+        checkbox_radar_offline.config(state=DISABLED)
         checkbox_radar_offline.pack(padx=5, pady=1)
         checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames", variable=self.correct_blink)
         checkbox_correct_blink.pack(padx=5, pady=1)

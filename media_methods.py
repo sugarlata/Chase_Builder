@@ -288,7 +288,7 @@ def set_video_time(video_filename_list, pattern_list, tz):
     return video_list, rejected_video_filename_list
 
 
-def get_time_list(media_path, pattern_list):
+def get_time_list(media_path, pattern_list, tz):
 
     # Read through the media folder for directories, if there are directories that can be time coded
     # successfully, assume that they are time lapse folders, add to the time_path_list
@@ -303,11 +303,15 @@ def get_time_list(media_path, pattern_list):
 
         for j in range(0, len(pattern_list)):
             try:
+                time_iso = arrow.get(time_path, pattern_list[j][0]).replace(tzinfo=tz)
+                time_epoch = int(time_iso.timestamp)
                 time_path_list.insert(len(time_path_list), time_path)
+
             except arrow.parser.ParserError:
                 if j == len(pattern_list) - 1:
                     print "The time code for folder", time_path, "in Media\ could not be interpreted"
 
+    print time_path_list
     return time_path_list
 
 
@@ -390,86 +394,31 @@ def set_time_time(time_path_list, pattern_list, tz):
 
 def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz):
 
-    # List of patterns for matching time codes. Second item in list is string for removal
-    pattern_list = [('YYYY:MM:DD HH:mm:ss', ''), ('YYYYMMDD_HHmmss', 'VID_'),
-                    ('YYYY-MM-DD HH.mm.ss', ''), ('YYYY.MM.DD_HH.mm.ss', '')]
-
-    # Set the Frame Rate
-    frame_rate = 25
-
-    # How long for media icons to dwell (in minutes)
-    dwell_time = 45
-
-    # GUI Ask about downloading place names
-    dl_place_names = gui_download_place_names()
-
     # ---------------------------------- Photo ----------------------------------
 
-    # Get Photo List
-    photo_filename_list = get_photo_list(media_path)
 
     # Check if the list is empty
 
     # TODO Code module here for user to manually select what pictures they want in and out.
     # TODO Need to edit photo_filename_list (along with above)
 
-    # Get Photo Exif Data (time taken)
-    photo_list, rejected_photos_filename_list = get_photo_exif_data(media_path, photo_filename_list, start_time,
-                                                                    end_time, tz)
     # Set the time for leftover photos manually
     # TODO Write code for this gui
     if len(rejected_photos_filename_list) != 0:
         print ""
 
-    # Set the location for each picture
-    photo_list = set_media_location(photo_list, gps_track)
 
-    # Resize photos as necessary
-    set_resized_photos(media_path, photo_list)
 
-    # Group Photos together
-    set_media_groups(photo_list)
 
     # ---------------------------------- Video ----------------------------------
 
-    # Get video list
-    video_filename_list = get_video_list(media_path)
-
-    # Check if the list is empty
-
-    # Get time from filename
-    video_list, rejected_video_filename_list = set_video_time(video_filename_list, pattern_list, tz)
 
     # Set the time for leftover videos
     # TODO Write code for this gui
-
-    # Set the location for each video
-    video_list = set_media_location(video_list, gps_track)
-
-    # Group Videos as necessary
-    set_media_groups(video_list)
 
     # ---------------------------------- Time Lapse ----------------------------------
 
-    # Get Time lapse List
-    time_path_list = get_time_list(media_path, pattern_list)
-
-    # Create the video
-    create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_rate)
-
-    # Create db of videos and the time they were taken
-    time_list = set_time_time(time_path_list, pattern_list, tz)
-
     # Set the time for leftover videos
     # TODO Write code for this gui
 
-    # Set the location for each video
-    time_list = set_media_location(time_list, gps_track)
-
-    # Group videos as necessary
-    set_media_groups(time_list)
-
     # ---------------------------------- KML ----------------------------------
-
-    # Create the Media KML
-    kml_creator.create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time)
