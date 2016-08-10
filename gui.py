@@ -5,7 +5,7 @@ import tempfile
 import icon_data
 import tkFont
 import arrow
-from threading import Thread
+import timezones
 from tkFileDialog import askopenfilename
 from tkFileDialog import askdirectory
 from Tkinter import IntVar
@@ -17,6 +17,7 @@ from Tkinter import HORIZONTAL
 from Tkinter import Frame
 from Tkinter import Button
 from Tkinter import Checkbutton
+from Tkinter import Radiobutton
 from Tkinter import LEFT
 from Tkinter import RIGHT
 from Tkinter import TOP
@@ -34,6 +35,8 @@ from Tkinter import Text
 from Tkinter import DISABLED
 from Tkinter import NORMAL
 from Tkinter import Scrollbar
+from Tkinter import W
+from Tkinter import Toplevel
 
 
 class TextScrollBox(Text):
@@ -48,9 +51,167 @@ class TextScrollBox(Text):
         self.update()
 
 
+class TimezoneSelector(Tk.Toplevel):
+
+    region = []
+    region_shorter = []
+    locations = []
+    location_shorter = []
+    current_region = ""
+    grandfather = ""
+
+    def __init__(self, grandfather):
+        Toplevel.__init__(self)
+
+        self.grandfather = grandfather
+        self.protocol("WM_DELETE_WINDOW", self.window_close)
+        self.wm_title("Time Zone Selector")
+        self.region, self.locations = timezones.get_options()
+
+        main_frame = Frame(self)
+        main_frame.pack(padx=5, pady=1, fill=BOTH, expand=True)
+
+        frame_top = Frame(main_frame)
+        frame_top.pack(pady=2, expand=True, fill=BOTH)
+
+        frame_region = Frame(frame_top)
+        frame_region.pack(side=LEFT, padx=3, expand=True, fill=BOTH)
+
+        frame_location = Frame(frame_top)
+        frame_location.pack(side=LEFT, padx=3, expand=True, fill=BOTH)
+
+        self.listbox_region = Listbox(frame_region)
+        self.listbox_region.pack(side=LEFT, padx=2, pady=2, fill=BOTH, expand=True)
+        scrollbar_region = Scrollbar(frame_region)
+        scrollbar_region.pack(side=LEFT, fill=Y)
+        self.listbox_region.config(yscrollcommand=scrollbar_region.set)
+        scrollbar_region.config(command=self.listbox_region.yview)
+        self.listbox_region.bind('<<ListboxSelect>>', self.onselect)
+
+        k = 0
+        last_region = ""
+        for i in range(0, len(self.region)):
+            if self.region[i] == last_region:
+                k += 1
+            else:
+                self.listbox_region.insert(i-k, self.region[i])
+                last_region = self.region[i]
+                self.region_shorter.append(self.region[i])
+
+        self.listbox_location = Listbox(frame_location)
+        self.listbox_location.pack(side=LEFT, padx=2, pady=2, fill=BOTH, expand=True)
+        scrollbar_location = Scrollbar(frame_location)
+        scrollbar_location.pack(side=LEFT, fill=Y)
+        self.listbox_location.config(yscrollcommand=scrollbar_location.set)
+        scrollbar_location.config(command=self.listbox_location.yview)
+
+        frame_bottom = Frame(main_frame)
+        frame_bottom.pack(pady=2)
+
+        button_ok = Button(frame_bottom, text='OK', command=self.ok_button)
+        button_ok.pack(padx=3, side=LEFT)
+        button_cancel = Button(frame_bottom, text='Cancel', command=self.cancel_button)
+        button_cancel.pack(padx=3, side=LEFT)
+
+    def onselect(self, evt):
+        k = 0
+        self.listbox_location.delete(0, END)
+        self.location_shorter = []
+        self.current_region = self.region_shorter[self.listbox_region.curselection()[0]]
+        for i in range(0, len(self.locations)):
+            if self.region[i] == self.region_shorter[self.listbox_region.curselection()[0]]:
+                self.listbox_location.insert(i - k, self.locations[i])
+                self.location_shorter.append(self.locations[i])
+            else:
+                k += 1
+
+    def ok_button(self):
+        tz = self.current_region + "/" + self.location_shorter[self.listbox_location.curselection()[0]]
+        self.grandfather.tz = tz.replace(' - ', '/')
+        print self.grandfather.tz
+        self.withdraw()
+
+    def cancel_button(self):
+        self.window_close()
+
+    def window_close(self):
+        self.withdraw()
+
+
+class RadarSelector(Tk.Toplevel):
+
+    idr_check_list = []
+    radar_checkbox_list = []
+
+    def __init__(self, grandparent):
+
+        def ok_button():
+            self.grandparent.radar_set = []
+            for i in range(0, len(self.idr_code_list)):
+                if self.idr_check_list[i].get() == 1:
+                    self.grandparent.radar_set.append(self.idr_code_list[i])
+
+            self.withdraw()
+
+        def cancel_button():
+            window_close()
+
+        def window_close():
+            self.withdraw()
+
+        Toplevel.__init__(self)
+        self.title("Radar Selector")
+        self.grandparent = grandparent
+        self.protocol("WM_DELETE_WINDOW", window_close)
+
+        frame_main = Frame(self)
+        frame_main.pack(padx=3, pady=3)
+        frame_selections = Frame(frame_main)
+        frame_selections.pack(fill=BOTH, expand=True)
+        frame_bottom = Frame(frame_main)
+        frame_bottom.pack(fill=BOTH, pady=3)
+
+        self.idr_code_list = []
+
+        for i in range(0, len(self.grandparent.radar_set)):
+            self.idr_code_list.append(self.grandparent.radar_set[i])
+
+        self.idr_code_list.sort()
+
+        for i in range(0, len(self.idr_code_list)):
+
+            self.idr_check_list.insert(i, IntVar())
+            idr_code = self.idr_code_list[i]
+            idr_name = self.grandparent.radar_db.get_title(idr_code)
+
+            radar_type = ""
+
+            if idr_code[-1] == "2":
+                radar_type = "256km"
+            elif idr_code[-1] == "I":
+                radar_type = "128km Wind"
+            elif idr_code[-1] == "1":
+                radar_type = "512km"
+            elif idr_code[-1] == "3":
+                radar_type = "128km"
+            elif idr_code[-1] == "4":
+                radar_type = "64km"
+
+            self.radar_checkbox_list.insert(i, Checkbutton(frame_selections, text=idr_code + " - " + idr_name + " " +
+                                                           radar_type, variable=self.idr_check_list[i]))
+            self.radar_checkbox_list[i].select()
+            self.radar_checkbox_list[i].grid(row=i, sticky=W)
+
+        button_ok = Button(frame_bottom, text='OK', command=ok_button)
+        button_ok.pack(padx=3, side=LEFT)
+        button_cancel = Button(frame_bottom, text='Cancel', command=cancel_button)
+        button_cancel.pack(padx=3, side=LEFT)
+
+
 class MainGUI(Tk.Frame):
     parent = ""
-    grandparent=""
+    grandparent = ""
+    tz = ""
 
     def __init__(self, parent, grandparent):
         Tk.Frame.__init__(Frame(), parent)
@@ -65,7 +226,8 @@ class MainGUI(Tk.Frame):
             pass
 
         def set_timezone():
-            pass
+            TimezoneSelector(self.grandparent)
+
 
         def get_root_button():
             root_path = askdirectory(title="Please select the Chase Root Folder", initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
@@ -82,6 +244,8 @@ class MainGUI(Tk.Frame):
                 checkbox_correct_blink.config(state=DISABLED)
                 checkbox_geocode_parse.config(state=DISABLED)
                 checkbox_radar_offline.config(state=DISABLED)
+
+                self.grandparent.correct_blink
 
         def open_gps_file():
             file_open_options = dict(defaultextension='.kml', filetypes=[('KML file', '*.kml'), ('All files', '*.*')])
@@ -114,8 +278,7 @@ class MainGUI(Tk.Frame):
             button_process_radar.config(state=NORMAL)
 
         def get_manual_radars():
-            from temp import anything
-            anything(text_box_main)
+            RadarSelector(self.grandparent)
 
         def process_images():
             button_manually_select_radar.config(state=DISABLED)

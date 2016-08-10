@@ -12,7 +12,7 @@ import time
 
 class MainApplication:
 
-    tb=""
+    tb = ""
     gps_track_filename = ""
     root_path = ""
     radar_path = ""
@@ -36,7 +36,6 @@ class MainApplication:
     video_list = []
     time_path_list = []
     time_list = []
-
 
     # List of patterns for matching time codes. Second item in list is string for removal
     pattern_list = [('YYYY:MM:DD HH:mm:ss', ''), ('YYYYMMDD_HHmmss', 'VID_'),
