@@ -6,6 +6,9 @@ import icon_data
 import tkFont
 import arrow
 import timezones
+import tkMessageBox
+import tkSimpleDialog
+import kml_creator
 from tkFileDialog import askopenfilename
 from tkFileDialog import askdirectory
 from Tkinter import IntVar
@@ -37,6 +40,7 @@ from Tkinter import NORMAL
 from Tkinter import Scrollbar
 from Tkinter import W
 from Tkinter import Toplevel
+
 
 
 class TextScrollBox(Text):
@@ -208,6 +212,139 @@ class RadarSelector(Tk.Toplevel):
         button_cancel.pack(padx=3, side=LEFT)
 
 
+class TrimGPS(Tk.Toplevel):
+
+    def __init__(self, parent, grandparent, tb):
+        self.tb = tb
+        self.parent = parent
+
+        def window_close():
+            self.grab_release()
+            self.withdraw()
+
+        def start_change_value(arg):
+            var_local_time_start.set(self.grandparent.gps_track[int(arg)].get_local_time())
+
+        def end_change_value(arg):
+            var_local_time_end.set(self.grandparent.gps_track[int(arg)].get_local_time())
+
+        def set_start():
+            start_response = tkSimpleDialog.askinteger("Set Start", "Please select the value you would like to start from")
+            if start_response == "":
+                self.grab_set()
+            else:
+                scale_start.set(start_response)
+                self.grab_set()
+
+        def set_end():
+            end_response = tkSimpleDialog.askinteger("Set End", "Please select the value you would like to end from")
+            if end_response == "":
+                self.grab_set()
+            else:
+                scale_end.set(end_response)
+                self.grab_set()
+
+        def set_start_left():
+            if scale_start.get() != 0:
+                scale_start.set(scale_start.get() - 1)
+
+        def set_start_right():
+            if scale_start.get() != (len(self.gps_track) - 1):
+                scale_start.set(scale_start.get() + 1)
+
+        def set_end_left():
+            if scale_end.get() != 0:
+                scale_end.set(scale_end.get() - 1)
+
+        def set_end_right():
+            if scale_end.get() != (len(self.gps_track) - 1):
+                scale_end.set(scale_end.get() + 1)
+
+        def ok():
+            if int(var_end.get()) < int(var_start.get()):
+                tkMessageBox.showwarning("Trim Error", "The end time is before the start point")
+            elif int(var_end.get()) < int(var_start.get()):
+                tkMessageBox.showwarning("Trim Error", "The end time cannot be the same as the start point")
+            else:
+                self.grab_release()
+                tb.tb_update("")
+                tb.tb_update("GPS Time Range has been updated")
+                tb.tb_update("")
+                self.grandparent.start_time = self.grandparent.gps_track[int(var_start.get())].get_time()
+                self.grandparent.end_time = self.grandparent.gps_track[int(var_end.get())].get_time()
+                self.grandparent.gps_track_filename, self.grandparent.gps_track = kml_creator.create_gps_track_kml(self.grandparent.gps_track, self.grandparent.start_time, self.grandparent.end_time, self.grandparent.root_path, self.grandparent.gps_track_filename, self.grandparent.tz)
+                tb.tb_update("")
+                tb.tb_update("Updated KML has been created:")
+                tb.tb_update(self.grandparent.gps_track_filename)
+                tb.tb_update("")
+                self.parent.button_trim_gps.config(state=DISABLED)
+                self.destroy()
+
+        Toplevel.__init__(self)
+
+        self.grab_set()
+        self.title("Trim Chase Start and End")
+        self.grandparent = grandparent
+        self.protocol("WM_DELETE_WINDOW", window_close)
+
+        self.gps_track = self.grandparent.gps_track
+
+        self.trim_start = 0
+        self.trim_end = len(self.gps_track)
+
+        var_start = IntVar()
+        var_end = IntVar()
+
+        var_local_time_start = StringVar()
+        var_local_time_end = StringVar()
+
+        frame_main = Frame(self)
+        frame_main.pack()
+
+        label_start = Label(frame_main, textvariable=var_local_time_start)
+        label_start.pack(anchor=CENTER)
+
+        scale_start = Scale(frame_main, from_=0, to=self.trim_end - 1, variable=var_start, length=500,
+                            orient=HORIZONTAL,
+                            command=start_change_value)
+        scale_start.pack(anchor=CENTER)
+
+        frame_bottom = Frame(frame_main)
+        frame_bottom.pack(anchor=CENTER)
+
+        button_set_start = Button(frame_bottom, text="Set Start Time", command=set_start)
+        button_set_start.grid(row=2, column=2)
+        button_set_start_left = Button(frame_bottom, text="Left", command=set_start_left)
+        button_set_start_left.grid(row=2, column=1)
+        button_set_start_right = Button(frame_bottom, text="Right", command=set_start_right)
+        button_set_start_right.grid(row=2, column=3)
+
+        label_space = Label(frame_main, text="")
+        label_space.pack(anchor=CENTER)
+
+        label_end = Label(frame_main, textvariable=var_local_time_end)
+        label_end.pack(anchor=CENTER)
+
+        scale_end = Scale(frame_main, from_=0, to=len(self.gps_track) - 1, variable=var_end, length=500,
+                          orient=HORIZONTAL,
+                          command=end_change_value)
+        scale_end.pack(anchor=CENTER)
+        scale_end.set(len(self.gps_track))
+
+        end_frame = Frame(frame_main)
+        end_frame.pack(anchor=CENTER)
+
+        button_set_end = Button(end_frame, text="Set Start Time", command=set_end)
+        button_set_end.grid(row=2, column=2)
+        button_set_end_left = Button(end_frame, text="Left", command=set_end_left)
+        button_set_end_left.grid(row=2, column=1)
+        button_set_end_right = Button(end_frame, text="Right", command=set_end_right)
+        button_set_end_right.grid(row=2, column=3)
+
+        button_ok = Button(frame_main, text="OK", command=ok)
+        button_ok.pack(anchor=CENTER)
+
+
 class MainGUI(Tk.Frame):
     parent = ""
     grandparent = ""
@@ -227,7 +364,6 @@ class MainGUI(Tk.Frame):
 
         def set_timezone():
             TimezoneSelector(self.grandparent)
-
 
         def get_root_button():
             root_path = askdirectory(title="Please select the Chase Root Folder", initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
@@ -262,15 +398,15 @@ class MainGUI(Tk.Frame):
                 self.str_gps_start.set(start_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
                 self.str_gps_end.set(end_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
                 button_open_gps_file.config(state=DISABLED)
-                button_trim_gps.config(state=NORMAL)
+                self.button_trim_gps.config(state=NORMAL)
                 button_identify_radars.config(state=NORMAL)
                 button_find_media.config(state=NORMAL)
 
         def trim_gps():
-            pass
+            TrimGPS(self, self.grandparent, text_box_main)
 
         def get_near_idrs():
-            button_trim_gps.config(state=DISABLED)
+            self.button_trim_gps.config(state=DISABLED)
             button_identify_radars.config(state=DISABLED)
             self.grandparent.radar_get_local_idr_list()
             button_manually_select_radar.config(state=NORMAL)
@@ -287,7 +423,9 @@ class MainGUI(Tk.Frame):
                 self.grandparent.download_radar_module = True
             else:
                 self.grandparent.download_radar_module = False
+
             self.grandparent.process_radar()
+
             if self.correct_blink.get() == 1:
                 self.grandparent.correct_blink()
 
@@ -434,8 +572,8 @@ class MainGUI(Tk.Frame):
         button_get_root.pack(padx=5, pady=1)
         button_open_gps_file = Button(frame_gps_action, text="Open GPS File", command=open_gps_file, state=DISABLED)
         button_open_gps_file.pack(padx=5, pady=1)
-        button_trim_gps = Button(frame_gps_action, text="Trim the GPS Track", command=trim_gps, state=DISABLED)
-        button_trim_gps.pack(padx=5, pady=1)
+        self.button_trim_gps = Button(frame_gps_action, text="Trim the GPS Track", command=trim_gps, state=DISABLED)
+        self.button_trim_gps.pack(padx=5, pady=1)
 
         frame_radar_action = Frame(frame_action, bd=2, relief=RIDGE)
         frame_radar_action.pack(side=LEFT, padx=5, pady=1, fill=Y)
@@ -476,17 +614,3 @@ class MainGUI(Tk.Frame):
 
     def window_close(self):
         exit()
-
-
-
-class TrimGui(Tk.Frame):
-    parent = ""
-
-    def __init__(self, parent):
-        Tk.Frame.__init__(Frame(), parent)
-        self.parent = parent
-        parent.protocol("WM_DELETE_WINDOW", self.window_close)
-
-    def window_close(self):
-        self.parent.withdraw()
-        self.parent.quit()

@@ -51,7 +51,7 @@ def get_near_idr_list(gps_track, tb):
             distance = int(gps_methods.get_distance_from_coordinates(lat1, lon1, lat2, lon2))/1000
 
             if distance < 362:  # sqrt(2)*max distance which is 256kms. This allows for corners of the radar
-                radar256suggests.insert(len(radar256suggests), radar_working_list[j - k])
+                radar256suggests.append(radar_working_list[j - k])
                 tb.tb_update(radar_working_list[j - k] + " Identified")
                 radar_working_list.remove(radar_working_list[j - k])
                 k += 1
@@ -150,6 +150,7 @@ def get_near_idr_list(gps_track, tb):
     tb.tb_update("------------------------------------------------------------")
     tb.tb_update("")
 
+    print radar_set
     return radar_set
 
 
@@ -164,9 +165,19 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
     radar_idr_paths = [x[0] for x in os.walk(radar_path)]
     radar_idr_paths.remove(radar_path)
+
     frame_db = []
 
+    print radar_idr_paths
+
     for j in range(0, len(radar_idr_paths)):
+
+        print radar_idr_paths[j].split("\\")[-1]
+
+        if not radar_idr_paths[j].split("\\")[-1] in radar_set:
+            continue
+
+
         idr_frame_db = []
         frame_filename_list = os.listdir(radar_idr_paths[j])
 
@@ -184,6 +195,7 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
         frame_db.append(idr_frame_db)
 
+    print frame_db
     tb.tb_update("")
     tb.tb_update("Completed")
     tb.tb_update("")

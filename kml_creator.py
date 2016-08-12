@@ -4,6 +4,50 @@ import os
 from radar_db import RadarDB
 
 
+
+def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_filename, tz):
+
+    kml = simplekml.Kml(name="Chase Track", open=1)
+
+    trimmed_kml_filename = root_path + "/" + os.path.splitext(os.path.basename(gps_track_filename))[0] + "-trimmed.kml"
+
+    when = []
+    coordinates = []
+    new_gps_track = []
+
+    for i in range(0, len(gps_track)):
+        if gps_track[i].get_time() == start_time:
+            start_position = i
+        if gps_track[i].get_time() == end_time:
+            end_position = i
+
+    for i in range(start_position, end_position):
+        when.append(gps_track[i].get_iso_time())
+        coordinates.append(gps_track[i].get_location())
+        new_gps_track.append(gps_track[i])
+
+    time_now = arrow.now(tz)
+
+    doc = kml.newdocument(name='Chase Builder', snippet=simplekml.Snippet('Created ' + time_now.format('YYYY-MM-DD HH:mm:ss')))
+
+    fol = doc.newfolder(name='Track')
+
+    schema = kml.newschema()
+
+    trk = fol.newgxtrack(name='Trimmed Track')
+
+    trk.extendeddata.schemadata.schemaurl = schema.id
+
+    trk.newwhen(when)
+    trk.newgxcoord(coordinates)
+    trk.stylemap.normalstyle.iconstyle.icon.href = 'http://earth.google.com/images/kml-icons/track-directional/track-0.png'
+    trk.stylemap.normalstyle.linestyle.color = '99ffac59'
+    trk.stylemap.normalstyle.linestyle.width = 6
+
+    kml.save(trimmed_kml_filename)
+    return trimmed_kml_filename, new_gps_track
+
+
 def create_radar_kml(frame_db, root_path, radar_path, tb):
 
     tb.tb_update("")
@@ -31,8 +75,9 @@ def create_radar_kml(frame_db, root_path, radar_path, tb):
 
         # List of radar overlay objects
         frame_list = frame_db[k]
-
+        print frame_list
         # Get the IDR Code. Each frame in the sub list will be identical
+
         idr_code = frame_list[0].get_filename().split('.')[0]
         radar_title = ""
         radar_db.select_radar(idr_code)
