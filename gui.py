@@ -9,6 +9,7 @@ import timezones
 import tkMessageBox
 import tkSimpleDialog
 import kml_creator
+import sys
 from tkFileDialog import askopenfilename
 from tkFileDialog import askdirectory
 from Tkinter import IntVar
@@ -40,7 +41,6 @@ from Tkinter import NORMAL
 from Tkinter import Scrollbar
 from Tkinter import W
 from Tkinter import Toplevel
-
 
 
 class TextScrollBox(Text):
@@ -613,4 +613,4 @@ class MainGUI(Tk.Frame):
         self.parent.iconbitmap(default=icon_path)
 
     def window_close(self):
-        exit()
+        sys.exit(1)

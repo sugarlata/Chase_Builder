@@ -1,13 +1,12 @@
 from radar_db import RadarDB
 from gui import MainGUI
-from gui import TrimGui
 import kml_creator as kml_creator
 import gps_methods as gps_methods
 import radar_methods as radar_methods
 import radar_download_frames as radar_download_frames
 import media_methods as media_methods
 import Tkinter as tk
-import time
+import sys
 
 
 class MainApplication:
@@ -64,7 +63,7 @@ class MainApplication:
         MainGUI(root, self)
         root.mainloop()
 
-        exit()
+        sys.exit(1)
 
     def set_tb(self, tb):
         self.tb = tb
