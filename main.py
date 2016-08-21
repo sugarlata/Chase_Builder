@@ -5,7 +5,7 @@ import gps_methods as gps_methods
 import radar_methods as radar_methods
 import radar_download_frames as radar_download_frames
 import media_methods as media_methods
-import Tkinter as tk
+import Tkinter as Tk
 import sys
 
 
@@ -20,7 +20,7 @@ class MainApplication:
     radar_db = ""
     radar_set = []
     download_radar_module = False
-    frames_db=[]
+    frames_db = []
     tz = "Australia/Melbourne"
     dl_place_names = False
     photo_len = ""
@@ -59,7 +59,7 @@ class MainApplication:
 
         # ---------------------------------- GUI Initialise ----------------------------------
 
-        root = tk.Tk()
+        root = Tk.Tk()
         MainGUI(root, self)
         root.mainloop()
 
@@ -72,7 +72,8 @@ class MainApplication:
 
         # Open the KML File
 
-        self.gps_track, self.start_time, self.end_time = gps_methods.get_gps_track_list(self.gps_track_filename, self.tz, self.tb)
+        self.gps_track, self.start_time, self.end_time = gps_methods.get_gps_track_list(self.gps_track_filename,
+                                                                                        self.tz, self.tb)
 
     def radar_get_local_idr_list(self):
 
@@ -184,26 +185,3 @@ if __name__ == '__main__':
         print str(err)
         print "Please contact Nathan Sgarlata: nathan.sgarlata+chasebuilder@gmail.com for troubleshooting"
         exit()
-
-
-# TODO Create TZ selector, default can be selected (saved in data file)
-# TODO Troubleshoot time code for videos
-# TODO Do some testing to try and break program
-
-# TODO Edit Radar Frames to look nicer
-# TODO Create a GUI for manually selecting IDR Codes
-# TODO Create a GUI for dwell time
-# TODO Change pictures for car (troubleshooting, different kml)
-# TODO Build GUI to house everything
-# TODO Find a module to put stdout in a scrollbox in GUI
-# TODO Implement shortlister for pictures
-# TODO Implement GUI to select ffmpeg. Include error handling
-# TODO Create an EXE using nuitka
-
-# TODO Implement error handling if no track file is selected
-# TODO Write code for selecting IDRCodes
-# TODO Write code for WorkingOffline
-# TODO Implement a version of the code for online use that manually downloads radar
-
-# TODO Implement gpx support
-# TODO Create module to dissect a location history KML downloaded from Google

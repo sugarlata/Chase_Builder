@@ -90,7 +90,7 @@ class TimezoneSelector(Tk.Toplevel):
         scrollbar_region.pack(side=LEFT, fill=Y)
         self.listbox_region.config(yscrollcommand=scrollbar_region.set)
         scrollbar_region.config(command=self.listbox_region.yview)
-        self.listbox_region.bind('<<ListboxSelect>>', self.onselect)
+        self.listbox_region.bind('<<ListboxSelect>>', self.on_select)
 
         k = 0
         last_region = ""
@@ -117,7 +117,7 @@ class TimezoneSelector(Tk.Toplevel):
         button_cancel = Button(frame_bottom, text='Cancel', command=self.cancel_button)
         button_cancel.pack(padx=3, side=LEFT)
 
-    def onselect(self, evt):
+    def on_select(self):
         k = 0
         self.listbox_location.delete(0, END)
         self.location_shorter = []
@@ -366,7 +366,8 @@ class MainGUI(Tk.Frame):
             TimezoneSelector(self.grandparent)
 
         def get_root_button():
-            root_path = askdirectory(title="Please select the Chase Root Folder", initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
+            root_path = askdirectory(title="Please select the Chase Root Folder",
+                                     initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
             if not root_path == "":
                 self.str_root_folder.set(root_path.replace('/', "\\"))
                 self.grandparent.root_path = root_path
