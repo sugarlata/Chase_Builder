@@ -36,11 +36,15 @@ from Tkinter import W
 from Tkinter import Toplevel
 
 
+# Implement the Scrolling Text Box Class. This is an extended class to include a custom method 'tb_update'
+# This object can be thrown to different classes, with the tb_update method used to update the user within the text box
 class TextScrollBox(Text):
     def __init__(self, *args, **kwargs):
         Text.__init__(self, *args, **kwargs)
 
     def tb_update(self, line):
+        # Text box is created to be non-editable. To write, first need to make it editable, write the line to the end,
+        # make it non-editable again and update the gui.
         self.config(state=NORMAL)
         self.insert(END, line + "\n")
         self.config(state=DISABLED)
@@ -48,8 +52,10 @@ class TextScrollBox(Text):
         self.update()
 
 
+# GUI for Timezone Selection
 class TimezoneSelector(Toplevel):
 
+    # Declare Variables. Selecting Timezones is two stage. Selecting a broad region, then selecting a location
     region = []
     region_shorter = []
     locations = []
@@ -60,31 +66,40 @@ class TimezoneSelector(Toplevel):
     def __init__(self, grandfather):
         Toplevel.__init__(self)
 
+        # Create the Timezone GUI
         self.grandfather = grandfather
         self.protocol("WM_DELETE_WINDOW", self.window_close)
         self.wm_title("Time Zone Selector")
+
+        # Load lists from Timezones object into local lists
         self.region, self.locations = timezones.get_options()
 
+        # main_frame is the base frame for the window
         main_frame = Frame(self)
         main_frame.pack(padx=5, pady=1, fill=BOTH, expand=True)
 
+        # Window split into top brame and bottom frame
         frame_top = Frame(main_frame)
         frame_top.pack(pady=2, expand=True, fill=BOTH)
 
+        # Inside top frame are two frames containing region options and location options
         frame_region = Frame(frame_top)
         frame_region.pack(side=LEFT, padx=3, expand=True, fill=BOTH)
-
         frame_location = Frame(frame_top)
         frame_location.pack(side=LEFT, padx=3, expand=True, fill=BOTH)
 
+        # Region frame contains listbox of options to select
         self.listbox_region = Listbox(frame_region)
         self.listbox_region.pack(side=LEFT, padx=2, pady=2, fill=BOTH, expand=True)
+        # Scrollbar for  region listbox
         scrollbar_region = Scrollbar(frame_region)
         scrollbar_region.pack(side=LEFT, fill=Y)
         self.listbox_region.config(yscrollcommand=scrollbar_region.set)
         scrollbar_region.config(command=self.listbox_region.yview)
+        # Listbox doesn't have a feature to call method on change value. Need to set this manually:
         self.listbox_region.bind('<<ListboxSelect>>', self.on_select)
 
+        # Populate the Region Listbox according to local region list
         k = 0
         last_region = ""
         for i in range(0, len(self.region)):
@@ -95,26 +110,39 @@ class TimezoneSelector(Toplevel):
                 last_region = self.region[i]
                 self.region_shorter.append(self.region[i])
 
+        # Create the Locations Listbox
         self.listbox_location = Listbox(frame_location)
         self.listbox_location.pack(side=LEFT, padx=2, pady=2, fill=BOTH, expand=True)
         scrollbar_location = Scrollbar(frame_location)
         scrollbar_location.pack(side=LEFT, fill=Y)
         self.listbox_location.config(yscrollcommand=scrollbar_location.set)
         scrollbar_location.config(command=self.listbox_location.yview)
+        # No need to have a manual call on listselect, want user to click ok after selecting location.
 
+        # Also have a bottom frame
         frame_bottom = Frame(main_frame)
         frame_bottom.pack(pady=2)
 
+        # Two buttons in bottom frame, OK and Cancel
         button_ok = Button(frame_bottom, text='OK', command=self.ok_button)
         button_ok.pack(padx=3, side=LEFT)
         button_cancel = Button(frame_bottom, text='Cancel', command=self.cancel_button)
         button_cancel.pack(padx=3, side=LEFT)
 
+    # Method to populate locations list when region list value is changed
     def on_select(self):
         k = 0
+
+        # Delete everything in the location listbox
         self.listbox_location.delete(0, END)
+
+        # Create custom list with only locations from a particular region
         self.location_shorter = []
+
+        # Declare current region
         self.current_region = self.region_shorter[self.listbox_region.curselection()[0]]
+
+        # Cycle through locations list, populate locations listbox if regions match.
         for i in range(0, len(self.locations)):
             if self.region[i] == self.region_shorter[self.listbox_region.curselection()[0]]:
                 self.listbox_location.insert(i - k, self.locations[i])
@@ -122,15 +150,20 @@ class TimezoneSelector(Toplevel):
             else:
                 k += 1
 
+    # If OK selected
     def ok_button(self):
+        # Note current Timezone, return this in format usable by Arrow Module.
         tz = self.current_region + "/" + self.location_shorter[self.listbox_location.curselection()[0]]
         self.grandfather.tz = tz.replace(' - ', '/')
         print self.grandfather.tz
+        # Close window
         self.withdraw()
 
+    # If cancel pressed, close window, do nothing
     def cancel_button(self):
         self.window_close()
 
+    # If window is closed, do nothing
     def window_close(self):
         self.withdraw()
 
