@@ -4,7 +4,6 @@ import os
 from radar_db import RadarDB
 
 
-
 def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_filename, tz):
 
     kml = simplekml.Kml(name="Chase Track", open=1)
@@ -14,6 +13,8 @@ def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_f
     when = []
     coordinates = []
     new_gps_track = []
+    start_position = 0
+    end_position = 0
 
     for i in range(0, len(gps_track)):
         if gps_track[i].get_time() == start_time:
@@ -28,7 +29,8 @@ def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_f
 
     time_now = arrow.now(tz)
 
-    doc = kml.newdocument(name='Chase Builder', snippet=simplekml.Snippet('Created ' + time_now.format('YYYY-MM-DD HH:mm:ss')))
+    doc = kml.newdocument(name='Chase Builder', snippet=simplekml.Snippet('Created ' +
+                                                                          time_now.format('YYYY-MM-DD HH:mm:ss')))
 
     fol = doc.newfolder(name='Track')
 
@@ -40,7 +42,8 @@ def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_f
 
     trk.newwhen(when)
     trk.newgxcoord(coordinates)
-    trk.stylemap.normalstyle.iconstyle.icon.href = 'http://earth.google.com/images/kml-icons/track-directional/track-0.png'
+    trk.stylemap.normalstyle.iconstyle.icon.href =\
+        'http://earth.google.com/images/kml-icons/track-directional/track-0.png'
     trk.stylemap.normalstyle.linestyle.color = '99ffac59'
     trk.stylemap.normalstyle.linestyle.width = 6
 
@@ -431,6 +434,5 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
     if len(kml_folders) == 0:
         print "There was no media found"
     else:
-        # TODO Need to change this to match the root_path and correct name
         os.chdir(root_path)
         kml.save('Media.kml')

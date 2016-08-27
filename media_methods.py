@@ -7,7 +7,6 @@ import arrow.parser
 import math
 import os
 import gps_methods
-import kml_creator
 
 
 def check_media_path_exists(media_path):
@@ -20,7 +19,6 @@ def check_media_path_exists(media_path):
 
 
 def gui_download_place_names():
-    # TODO Write this gui
     return False
 
 
@@ -303,8 +301,7 @@ def get_time_list(media_path, pattern_list, tz):
 
         for j in range(0, len(pattern_list)):
             try:
-                time_iso = arrow.get(time_path, pattern_list[j][0]).replace(tzinfo=tz)
-                time_epoch = int(time_iso.timestamp)
+                arrow.get(time_path, pattern_list[j][0]).replace(tzinfo=tz)
                 time_path_list.insert(len(time_path_list), time_path)
 
             except arrow.parser.ParserError:
@@ -390,35 +387,3 @@ def set_time_time(time_path_list, pattern_list, tz):
                     print "There was an error matching the time for video", time_path + ".mp4"
 
     return time_list
-
-
-def process_media(root_path, media_path, ffmpeg_location, gps_track, start_time, end_time, tz):
-
-    # ---------------------------------- Photo ----------------------------------
-
-
-    # Check if the list is empty
-
-    # TODO Code module here for user to manually select what pictures they want in and out.
-    # TODO Need to edit photo_filename_list (along with above)
-
-    # Set the time for leftover photos manually
-    # TODO Write code for this gui
-    if len(rejected_photos_filename_list) != 0:
-        print ""
-
-
-
-
-    # ---------------------------------- Video ----------------------------------
-
-
-    # Set the time for leftover videos
-    # TODO Write code for this gui
-
-    # ---------------------------------- Time Lapse ----------------------------------
-
-    # Set the time for leftover videos
-    # TODO Write code for this gui
-
-    # ---------------------------------- KML ----------------------------------

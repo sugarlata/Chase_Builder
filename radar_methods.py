@@ -8,7 +8,6 @@ from radar_overlays import RadarFrameOffline
 # Function to return nearest IDRs according to gps_track
 def get_near_idr_list(gps_track, tb):
 
-
     tb.tb_update("")
     tb.tb_update("------------------------------------------------------------")
     tb.tb_update("")
@@ -176,7 +175,6 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
         if not radar_idr_paths[j].split("\\")[-1] in radar_set:
             continue
-
 
         idr_frame_db = []
         frame_filename_list = os.listdir(radar_idr_paths[j])
