@@ -168,6 +168,7 @@ class TimezoneSelector(Toplevel):
         self.withdraw()
 
 
+# GUI for Radar Selection
 class RadarSelector(Toplevel):
 
     # Define variables
@@ -261,80 +262,114 @@ class RadarSelector(Toplevel):
         button_cancel.pack(padx=3, side=LEFT)
 
 
+# GUI for Trimming the GPS Track
 class TrimGPS(Toplevel):
 
     def __init__(self, parent, grandparent, tb):
+        # tb is textbox object used to update user.
         self.tb = tb
         self.parent = parent
 
         def trim_window_close():
+            # Want to grab release (so that you can use the main window and close this window.
             self.grab_release()
             self.withdraw()
 
         def start_change_value(arg):
+            # Change the IntVar will change the scrollbar
             var_local_time_start.set(self.grandparent.gps_track[int(arg)].get_local_time())
 
         def end_change_value(arg):
+            # Change the IntVar will change the scroll bar
             var_local_time_end.set(self.grandparent.gps_track[int(arg)].get_local_time())
 
         def set_start():
+
+            # Prompt user for the start time.
             start_response = tkSimpleDialog.askinteger("Set Start",
                                                        "Please select the value you would like to start from")
+            # If response is blank, throw back to Trim GUI with grab set
             if start_response == "":
                 self.grab_set()
             else:
+                # If not empty, set the response accordingly then throw to Trim GUI.
                 scale_start.set(start_response)
                 self.grab_set()
 
         def set_end():
+
+            # Prompt user for the end time.
             end_response = tkSimpleDialog.askinteger("Set End", "Please select the value you would like to end from")
+
+            # If response is blank, throw back to Trim GUI with grab set
             if end_response == "":
                 self.grab_set()
             else:
+                # If not empty, set the response accordingly then throw to Trim GUI.
                 scale_end.set(end_response)
                 self.grab_set()
 
         def set_start_left():
+            # Move start scrollbar left one value
             if scale_start.get() != 0:
                 scale_start.set(scale_start.get() - 1)
 
         def set_start_right():
+            # Move start scrollbar right one value
             if scale_start.get() != (len(self.gps_track) - 1):
                 scale_start.set(scale_start.get() + 1)
 
         def set_end_left():
+            # Move end scrollbar left one value
             if scale_end.get() != 0:
                 scale_end.set(scale_end.get() - 1)
 
         def set_end_right():
+            # Move end scrollbar right one value
             if scale_end.get() != (len(self.gps_track) - 1):
                 scale_end.set(scale_end.get() + 1)
 
         def ok():
+            # First need to check that the start time is before the finish point
             if int(var_end.get()) < int(var_start.get()):
                 tkMessageBox.showwarning("Trim Error", "The end time is before the start point")
-            elif int(var_end.get()) < int(var_start.get()):
+
+            # Next make sure that the start and end time are not the same
+            elif int(var_end.get()) == int(var_start.get()):
                 tkMessageBox.showwarning("Trim Error", "The end time cannot be the same as the start point")
+
+            # Set the correct trim
             else:
                 self.grab_release()
+
+                # Update User
                 tb.tb_update("")
                 tb.tb_update("GPS Time Range has been updated")
                 tb.tb_update("")
+
+                # Update start and end time in main module
                 self.grandparent.start_time = self.grandparent.gps_track[int(var_start.get())].get_time()
                 self.grandparent.end_time = self.grandparent.gps_track[int(var_end.get())].get_time()
+
+                # Use the kml creator to create the trimmed track. This returns an updated gps track and gps track file,
+                # kept in the main module
                 self.grandparent.gps_track_filename, self.grandparent.gps_track =\
                     kml_creator.create_gps_track_kml(self.grandparent.gps_track, self.grandparent.start_time,
                                                      self.grandparent.end_time, self.grandparent.root_path,
                                                      self.grandparent.gps_track_filename, self.grandparent.tz)
+                # Update the User
                 tb.tb_update("")
                 tb.tb_update("Updated KML has been created:")
                 tb.tb_update(self.grandparent.gps_track_filename)
                 tb.tb_update("")
+
+                # Disable Trim Track Button and destroy window
                 self.parent.button_trim_gps.config(state=DISABLED)
                 self.destroy()
 
         Toplevel.__init__(self)
 
+        # Create window details
         self.grab_set()
         self.title("Trim Chase Start and End")
         self.grandparent = grandparent
@@ -342,18 +377,23 @@ class TrimGPS(Toplevel):
 
         self.gps_track = self.grandparent.gps_track
 
+        # Define trim start and end
         self.trim_start = 0
         self.trim_end = len(self.gps_track)
 
+        # Create Int Variables for scrollbars
         var_start = IntVar()
         var_end = IntVar()
 
+        # String variable to be updated for local time display (as well as point number)
         var_local_time_start = StringVar()
         var_local_time_end = StringVar()
 
+        # Base Frame
         frame_main = Frame(self)
         frame_main.pack()
 
+        # Start Section
         label_start = Label(frame_main, textvariable=var_local_time_start)
         label_start.pack(anchor=CENTER)
 
@@ -362,6 +402,7 @@ class TrimGPS(Toplevel):
                             command=start_change_value)
         scale_start.pack(anchor=CENTER)
 
+        # Bottom Frame
         frame_bottom = Frame(frame_main)
         frame_bottom.pack(anchor=CENTER)
 
@@ -375,6 +416,7 @@ class TrimGPS(Toplevel):
         label_space = Label(frame_main, text="")
         label_space.pack(anchor=CENTER)
 
+        # End Section
         label_end = Label(frame_main, textvariable=var_local_time_end)
         label_end.pack(anchor=CENTER)
 
@@ -394,6 +436,7 @@ class TrimGPS(Toplevel):
         button_set_end_right = Button(end_frame, text="Right", command=set_end_right)
         button_set_end_right.grid(row=2, column=3)
 
+        # OK Button at Bottom
         button_ok = Button(frame_main, text="OK", command=ok)
         button_ok.pack(anchor=CENTER)
 
