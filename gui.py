@@ -21,16 +21,9 @@ from Tkinter import HORIZONTAL
 from Tkinter import Frame
 from Tkinter import Button
 from Tkinter import Checkbutton
-from Tkinter import Radiobutton
 from Tkinter import LEFT
 from Tkinter import RIGHT
-from Tkinter import TOP
-from Tkinter import BOTTOM
-from Tkinter import SUNKEN
-from Tkinter import GROOVE
 from Tkinter import RIDGE
-from Tkinter import RAISED
-from Tkinter import X
 from Tkinter import Y
 from Tkinter import Listbox
 from Tkinter import BOTH
@@ -55,7 +48,7 @@ class TextScrollBox(Text):
         self.update()
 
 
-class TimezoneSelector(Tk.Toplevel):
+class TimezoneSelector(Toplevel):
 
     region = []
     region_shorter = []
@@ -142,7 +135,7 @@ class TimezoneSelector(Tk.Toplevel):
         self.withdraw()
 
 
-class RadarSelector(Tk.Toplevel):
+class RadarSelector(Toplevel):
 
     idr_check_list = []
     radar_checkbox_list = []
@@ -151,22 +144,22 @@ class RadarSelector(Tk.Toplevel):
 
         def ok_button():
             self.grandparent.radar_set = []
-            for i in range(0, len(self.idr_code_list)):
-                if self.idr_check_list[i].get() == 1:
-                    self.grandparent.radar_set.append(self.idr_code_list[i])
+            for l in range(0, len(self.idr_code_list)):
+                if self.idr_check_list[l].get() == 1:
+                    self.grandparent.radar_set.append(self.idr_code_list[l])
 
             self.withdraw()
 
         def cancel_button():
-            window_close()
+            radar_window_close()
 
-        def window_close():
+        def radar_window_close():
             self.withdraw()
 
         Toplevel.__init__(self)
         self.title("Radar Selector")
         self.grandparent = grandparent
-        self.protocol("WM_DELETE_WINDOW", window_close)
+        self.protocol("WM_DELETE_WINDOW", radar_window_close)
 
         frame_main = Frame(self)
         frame_main.pack(padx=3, pady=3)
@@ -212,13 +205,13 @@ class RadarSelector(Tk.Toplevel):
         button_cancel.pack(padx=3, side=LEFT)
 
 
-class TrimGPS(Tk.Toplevel):
+class TrimGPS(Toplevel):
 
     def __init__(self, parent, grandparent, tb):
         self.tb = tb
         self.parent = parent
 
-        def window_close():
+        def trim_window_close():
             self.grab_release()
             self.withdraw()
 
@@ -229,7 +222,8 @@ class TrimGPS(Tk.Toplevel):
             var_local_time_end.set(self.grandparent.gps_track[int(arg)].get_local_time())
 
         def set_start():
-            start_response = tkSimpleDialog.askinteger("Set Start", "Please select the value you would like to start from")
+            start_response = tkSimpleDialog.askinteger("Set Start",
+                                                       "Please select the value you would like to start from")
             if start_response == "":
                 self.grab_set()
             else:
@@ -272,7 +266,10 @@ class TrimGPS(Tk.Toplevel):
                 tb.tb_update("")
                 self.grandparent.start_time = self.grandparent.gps_track[int(var_start.get())].get_time()
                 self.grandparent.end_time = self.grandparent.gps_track[int(var_end.get())].get_time()
-                self.grandparent.gps_track_filename, self.grandparent.gps_track = kml_creator.create_gps_track_kml(self.grandparent.gps_track, self.grandparent.start_time, self.grandparent.end_time, self.grandparent.root_path, self.grandparent.gps_track_filename, self.grandparent.tz)
+                self.grandparent.gps_track_filename, self.grandparent.gps_track =\
+                    kml_creator.create_gps_track_kml(self.grandparent.gps_track, self.grandparent.start_time,
+                                                     self.grandparent.end_time, self.grandparent.root_path,
+                                                     self.grandparent.gps_track_filename, self.grandparent.tz)
                 tb.tb_update("")
                 tb.tb_update("Updated KML has been created:")
                 tb.tb_update(self.grandparent.gps_track_filename)
@@ -285,7 +282,7 @@ class TrimGPS(Tk.Toplevel):
         self.grab_set()
         self.title("Trim Chase Start and End")
         self.grandparent = grandparent
-        self.protocol("WM_DELETE_WINDOW", window_close)
+        self.protocol("WM_DELETE_WINDOW", trim_window_close)
 
         self.gps_track = self.grandparent.gps_track
 
@@ -354,7 +351,7 @@ class MainGUI(Tk.Frame):
         Tk.Frame.__init__(Frame(), parent)
         self.grandparent = grandparent
         self.parent = parent
-        parent.protocol("WM_DELETE_WINDOW", self.window_close)
+        parent.protocol("WM_DELETE_WINDOW", window_close)
         self.parent.wm_title("Chase Builder")
 
         # Button Methods
@@ -382,12 +379,10 @@ class MainGUI(Tk.Frame):
                 checkbox_geocode_parse.config(state=DISABLED)
                 checkbox_radar_offline.config(state=DISABLED)
 
-                self.grandparent.correct_blink
-
         def open_gps_file():
             file_open_options = dict(defaultextension='.kml', filetypes=[('KML file', '*.kml'), ('All files', '*.*')])
-            gps_track_filename = askopenfilename(title="Select the Chase GPS Track", initialdir=self.grandparent.root_path,
-                                                 **file_open_options)
+            gps_track_filename = askopenfilename(title="Select the Chase GPS Track",
+                                                 initialdir=self.grandparent.root_path, **file_open_options)
 
             if not gps_track_filename == "":
                 self.str_gps_file.set(gps_track_filename.split('/')[-1])
@@ -467,7 +462,8 @@ class MainGUI(Tk.Frame):
         frame_middle = Frame(frame_main)
         frame_middle.pack(fill=BOTH, expand=True, padx=5)
 
-        text_box_main = TextScrollBox(frame_middle, height=5, width=10, state=DISABLED, font=tkFont.Font(family="Courier New", size=8))
+        text_box_main = TextScrollBox(frame_middle, height=5, width=10, state=DISABLED,
+                                      font=tkFont.Font(family="Courier New", size=8))
         text_box_main.pack(side=LEFT, fill=BOTH, expand=True, pady=1)
         self.grandparent.set_tb(text_box_main)
 
@@ -555,13 +551,16 @@ class MainGUI(Tk.Frame):
         button_help.pack(padx=5, pady=1)
         button_set_tz = Button(frame_settings, text="Set Timezone", command=set_timezone)
         button_set_tz.pack(padx=5, pady=1)
-        checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar", variable=self.radar_offline)
+        checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar",
+                                             variable=self.radar_offline)
         self.radar_offline.set(1)
         checkbox_radar_offline.config(state=DISABLED)
         checkbox_radar_offline.pack(padx=5, pady=1)
-        checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames", variable=self.correct_blink)
+        checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames",
+                                             variable=self.correct_blink)
         checkbox_correct_blink.pack(padx=5, pady=1)
-        checkbox_geocode_parse = Checkbutton(frame_settings, text="Get Geo-coded Locations", variable=self.geocode_parse)
+        checkbox_geocode_parse = Checkbutton(frame_settings, text="Get Geo-coded Locations",
+                                             variable=self.geocode_parse)
         checkbox_geocode_parse.pack(padx=5, pady=1)
 
         frame_gps_action = Frame(frame_action, bd=2, relief=RIDGE)
@@ -581,13 +580,17 @@ class MainGUI(Tk.Frame):
 
         label_radar_title = Label(frame_radar_action, text="Radar Module")
         label_radar_title.pack(padx=5, pady=1)
-        button_identify_radars = Button(frame_radar_action, text="Identify Radars", command=get_near_idrs, state=DISABLED)
+        button_identify_radars = Button(frame_radar_action, text="Identify Radars", command=get_near_idrs,
+                                        state=DISABLED)
         button_identify_radars.pack(padx=5, pady=1)
-        button_manually_select_radar = Button(frame_radar_action, text="Select Radars", command=get_manual_radars, state=DISABLED)
+        button_manually_select_radar = Button(frame_radar_action, text="Select Radars", command=get_manual_radars,
+                                              state=DISABLED)
         button_manually_select_radar.pack(padx=5, pady=1)
-        button_process_radar = Button(frame_radar_action, text="Process Radar Images", command=process_images, state=DISABLED)
+        button_process_radar = Button(frame_radar_action, text="Process Radar Images", command=process_images,
+                                      state=DISABLED)
         button_process_radar.pack(padx=5, pady=1)
-        button_create_radar_kml = Button(frame_radar_action, text="Create the KML file", command=create_radar_kml, state=DISABLED)
+        button_create_radar_kml = Button(frame_radar_action, text="Create the KML file", command=create_radar_kml,
+                                         state=DISABLED)
         button_create_radar_kml.pack(padx=5, pady=1)
 
         frame_media_action = Frame(frame_action, bd=2, relief=RIDGE)
@@ -597,9 +600,11 @@ class MainGUI(Tk.Frame):
         label_media_title.pack(padx=5, pady=1)
         button_find_media = Button(frame_media_action, text="Search for Media", command=find_media, state=DISABLED)
         button_find_media.pack(padx=5, pady=1)
-        button_manual_time_media = Button(frame_media_action, text="Manually Set Time", command=manual_time_find, state=DISABLED)
+        button_manual_time_media = Button(frame_media_action, text="Manually Set Time", command=manual_time_find,
+                                          state=DISABLED)
         button_manual_time_media.pack(padx=5, pady=1)
-        button_create_media_kml = Button(frame_media_action, text="Create Media KML", command=create_media_kml, state=DISABLED)
+        button_create_media_kml = Button(frame_media_action, text="Create Media KML", command=create_media_kml,
+                                         state=DISABLED)
         button_create_media_kml.pack(padx=5, pady=1)
 
         self.parent.update_idletasks()
@@ -613,5 +618,6 @@ class MainGUI(Tk.Frame):
 
         self.parent.iconbitmap(default=icon_path)
 
-    def window_close(self):
-        sys.exit(1)
+
+def window_close():
+    sys.exit(1)
