@@ -170,52 +170,71 @@ class TimezoneSelector(Toplevel):
 
 class RadarSelector(Toplevel):
 
+    # Define variables
     idr_check_list = []
     radar_checkbox_list = []
 
     def __init__(self, grandparent):
 
+        # Define button methods to start with
         def ok_button():
+            # radar_set is list of IDRCodes to download / look for locally
             self.grandparent.radar_set = []
+
+            # Cycle through checklist, for each once selected, add into radar_set
             for l in range(0, len(self.idr_code_list)):
                 if self.idr_check_list[l].get() == 1:
                     self.grandparent.radar_set.append(self.idr_code_list[l])
 
+            # Close window
             self.withdraw()
 
         def cancel_button():
+            # Same as close window
             radar_window_close()
 
         def radar_window_close():
+            # Close window, do nothing
             self.withdraw()
 
         Toplevel.__init__(self)
+
+        # Title, as well as defining "main" object.
         self.title("Radar Selector")
         self.grandparent = grandparent
         self.protocol("WM_DELETE_WINDOW", radar_window_close)
 
+        # Main Frame in which everything will go
         frame_main = Frame(self)
         frame_main.pack(padx=3, pady=3)
+        # Selections frame, where check boxes will go
         frame_selections = Frame(frame_main)
         frame_selections.pack(fill=BOTH, expand=True)
+        # Bottom frame for buttons
         frame_bottom = Frame(frame_main)
         frame_bottom.pack(fill=BOTH, pady=3)
 
         self.idr_code_list = []
 
+        # Add everything in the radar set, into the local list for showing
         for i in range(0, len(self.grandparent.radar_set)):
             self.idr_code_list.append(self.grandparent.radar_set[i])
 
         self.idr_code_list.sort()
 
+        # For each IDR Code
         for i in range(0, len(self.idr_code_list)):
 
+            # Create an IntVar
             self.idr_check_list.insert(i, IntVar())
+
+            # Take note of the code and name
             idr_code = self.idr_code_list[i]
             idr_name = self.grandparent.radar_db.get_title(idr_code)
 
             radar_type = ""
 
+            # Interpret Radar type from IDR Code (last character gives type)
             if idr_code[-1] == "2":
                 radar_type = "256km"
             elif idr_code[-1] == "I":
@@ -227,11 +246,15 @@ class RadarSelector(Toplevel):
             elif idr_code[-1] == "4":
                 radar_type = "64km"
 
+            # Create checkbox list. Checkbox value goes to IntVar list. Name is according to name and type of radar.
             self.radar_checkbox_list.insert(i, Checkbutton(frame_selections, text=idr_code + " - " + idr_name + " " +
                                                            radar_type, variable=self.idr_check_list[i]))
+
+            # Some code to ensure they are all selected to start with.
             self.radar_checkbox_list[i].select()
             self.radar_checkbox_list[i].grid(row=i, sticky=W)
 
+        # Create the ok button and cancel button
         button_ok = Button(frame_bottom, text='OK', command=ok_button)
         button_ok.pack(padx=3, side=LEFT)
         button_cancel = Button(frame_bottom, text='Cancel', command=cancel_button)
