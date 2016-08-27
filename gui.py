@@ -441,126 +441,173 @@ class TrimGPS(Toplevel):
         button_ok.pack(anchor=CENTER)
 
 
-class MainGUI(Tk.Frame):
+# GUI for Main Base
+class MainGUI(Frame):
     parent = ""
     grandparent = ""
     tz = ""
 
     def __init__(self, parent, grandparent):
-        Tk.Frame.__init__(Frame(), parent)
+
+        # Initialise and setup the window / object
+        Frame.__init__(self, parent)
         self.grandparent = grandparent
         self.parent = parent
         parent.protocol("WM_DELETE_WINDOW", window_close)
         self.parent.wm_title("Chase Builder")
 
         # Button Methods
-
         def instructions_button():
             pass
 
         def set_timezone():
+            # Open the Timezone Selector Class, no need keep the object
             TimezoneSelector(self.grandparent)
 
         def get_root_button():
+
+            # GUI to ask for root directory
             root_path = askdirectory(title="Please select the Chase Root Folder",
                                      initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
+            # If returned variable isn't blank:
             if not root_path == "":
+                # Cleanup the root folder string, put this in main module and name Radar nad Media directories also
                 self.str_root_folder.set(root_path.replace('/', "\\"))
                 self.grandparent.root_path = root_path
                 self.grandparent.radar_path = self.grandparent.root_path + r"\Radar"
                 self.grandparent.media_path = self.grandparent.root_path + r"\Media"
 
+                # Set button disabled / enabled
                 button_open_gps_file.config(state=NORMAL)
                 button_get_root.config(state=DISABLED)
                 button_set_tz.config(state=DISABLED)
 
+                # General Settings to disabled
                 checkbox_correct_blink.config(state=DISABLED)
                 checkbox_geocode_parse.config(state=DISABLED)
                 checkbox_radar_offline.config(state=DISABLED)
 
         def open_gps_file():
+
+            # File Open options, currently only support kml.
             file_open_options = dict(defaultextension='.kml', filetypes=[('KML file', '*.kml'), ('All files', '*.*')])
+
+            # Show GUI for opening the file track
             gps_track_filename = askopenfilename(title="Select the Chase GPS Track",
                                                  initialdir=self.grandparent.root_path, **file_open_options)
 
+            # Check that the filename is not blank
             if not gps_track_filename == "":
+                # Clean up the filename and put it in main module
                 self.str_gps_file.set(gps_track_filename.split('/')[-1])
                 self.grandparent.gps_track_filename = gps_track_filename
+
+                # Load the track file into database
                 self.grandparent.gps_load_track()
+
+                # Set the local start and end times to the main modules
                 start_time = arrow.get(self.grandparent.start_time)
                 end_time = arrow.get(self.grandparent.end_time)
                 tz = self.grandparent.tz
+
+                # Set the local strings (in GUI) to match the main module
                 self.str_gps_start.set(start_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
                 self.str_gps_end.set(end_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
+
+                # Enable / Disable Buttons
                 button_open_gps_file.config(state=DISABLED)
                 self.button_trim_gps.config(state=NORMAL)
                 button_identify_radars.config(state=NORMAL)
                 button_find_media.config(state=NORMAL)
 
         def trim_gps():
+            # Run GPS Trim GUI
             TrimGPS(self, self.grandparent, text_box_main)
 
         def get_near_idrs():
+            # Enable / Disable Buttons
             self.button_trim_gps.config(state=DISABLED)
             button_identify_radars.config(state=DISABLED)
-            self.grandparent.radar_get_local_idr_list()
-            button_manually_select_radar.config(state=NORMAL)
 
+            # Run code to get the IDR Code list (nearest radars)
+            self.grandparent.radar_get_local_idr_list()
+
+            # Enable / Disable Buttons
+            button_manually_select_radar.config(state=NORMAL)
             button_process_radar.config(state=NORMAL)
 
         def get_manual_radars():
+            # Run Radar Selector GUI
             RadarSelector(self.grandparent)
 
-        def process_images():
+        def process_radar_images():
+            # Enable / Disable Buttons
             button_manually_select_radar.config(state=DISABLED)
             button_process_radar.config(state=DISABLED)
+
+            # Check if Chase Builder is suppoed to get local radars, or download
             if self.radar_offline.get() == 0:
                 self.grandparent.download_radar_module = True
             else:
                 self.grandparent.download_radar_module = False
 
+            # Process the radar (into database in main module)
             self.grandparent.process_radar()
 
+            # If Correct Blink option was enabled, then run code to correct this.
             if self.correct_blink.get() == 1:
                 self.grandparent.correct_blink()
 
+            # Enable / Disable Buttons
             button_create_radar_kml.config(state=NORMAL)
 
         def create_radar_kml():
+            # Create Radar KML File
             self.grandparent.create_radar_kml_file()
             button_create_radar_kml.config(state=DISABLED)
 
         def find_media():
+            # Find Media, throw in StringVars to update
             self.grandparent.find_media(self.str_photos, self.str_videos, self.str_time)
+
+            # Enable / Disable Buttons
             button_create_media_kml.config(state=NORMAL)
             button_find_media.config(state=DISABLED)
 
         def manual_time_find():
+            # Manually select time for media objects
             pass
 
         def create_media_kml():
+            # Create the Media KML File
             self.grandparent.create_media_kml()
             button_create_media_kml.config(state=DISABLED)
 
+        # Create the StringVars for Main Window
         self.str_root_folder = StringVar()
         self.str_gps_file = StringVar()
         self.str_gps_start = StringVar()
         self.str_gps_end = StringVar()
 
+        # StringVars for how many of each media was found
         self.str_photos = StringVar()
         self.str_videos = StringVar()
         self.str_time = StringVar()
 
+        # IntVars for checkboxes for general settings
         self.radar_offline = IntVar()
         self.correct_blink = IntVar()
         self.geocode_parse = IntVar()
 
+        # Base Frame
         frame_main = Frame(self.parent)
         frame_main.pack(fill=BOTH, expand=True, pady=5)
 
+        # Middle Frame
         frame_middle = Frame(frame_main)
         frame_middle.pack(fill=BOTH, expand=True, padx=5)
 
+        # Text Box of output from program goes in the Middle Frame and is expandable
         text_box_main = TextScrollBox(frame_middle, height=5, width=10, state=DISABLED,
                                       font=tkFont.Font(family="Courier New", size=8))
         text_box_main.pack(side=LEFT, fill=BOTH, expand=True, pady=1)
@@ -572,12 +619,15 @@ class MainGUI(Tk.Frame):
         text_box_main.config(yscrollcommand=scrollbar_main.set)
         scrollbar_main.config(command=text_box_main.yview)
 
+        # This is the action frame (where all the buttons will reside
         frame_action = Frame(frame_main)
         frame_action.pack(expand=False)
 
+        # Detail frame, for overall information
         frame_detail = Frame(frame_main)
         frame_detail.pack(expand=False)
 
+        # Frame for General Details: Root Folder
         frame_general_detail = Frame(frame_detail, bd=2, relief=RIDGE)
         frame_general_detail.pack(side=LEFT, padx=5, pady=1, fill=BOTH)
 
@@ -590,6 +640,7 @@ class MainGUI(Tk.Frame):
         label_root_folder = Label(frame_root_folder, textvariable=self.str_root_folder)
         label_root_folder.pack(side=LEFT)
 
+        # Frame for GPS Details: Filename, Start Time, End Time
         frame_gps_detail = Frame(frame_detail, bd=2, relief=RIDGE)
         frame_gps_detail.pack(side=LEFT, padx=5, pady=1, fill=BOTH)
 
@@ -616,6 +667,7 @@ class MainGUI(Tk.Frame):
         label_gps_finish = Label(frame_gps_finish, textvariable=self.str_gps_end)
         label_gps_finish.pack(side=LEFT)
 
+        # Media Details: Number of Photos, Video and Time lapses
         frame_media_detail = Frame(frame_detail, bd=2, relief=RIDGE)
         frame_media_detail.pack(side=LEFT, padx=5, pady=1, fill=BOTH)
 
@@ -643,6 +695,7 @@ class MainGUI(Tk.Frame):
         label_media_time = Label(frame_media_time, textvariable=self.str_time)
         label_media_time.pack(side=LEFT)
 
+        # Settings Frame: Instructions, Timezone, Use Local Radar, Correct Blinking Radar, Geocoded Locations
         frame_settings = Frame(frame_action, bd=2, relief=RIDGE)
         frame_settings.pack(side=LEFT, padx=5, pady=1, fill=Y)
 
@@ -652,8 +705,11 @@ class MainGUI(Tk.Frame):
         button_set_tz.pack(padx=5, pady=1)
         checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar",
                                              variable=self.radar_offline)
+
+        # Hard coded to disable option of downloading radar frames
         self.radar_offline.set(1)
-        checkbox_radar_offline.config(state=DISABLED)
+        checkbox_radar_offline.config(state=DISABLED) # Set this line to NORMAL to enable
+
         checkbox_radar_offline.pack(padx=5, pady=1)
         checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames",
                                              variable=self.correct_blink)
@@ -662,6 +718,7 @@ class MainGUI(Tk.Frame):
                                              variable=self.geocode_parse)
         checkbox_geocode_parse.pack(padx=5, pady=1)
 
+        # GPS Action Frame
         frame_gps_action = Frame(frame_action, bd=2, relief=RIDGE)
         frame_gps_action.pack(side=LEFT, padx=5, pady=1, fill=Y)
 
@@ -674,6 +731,7 @@ class MainGUI(Tk.Frame):
         self.button_trim_gps = Button(frame_gps_action, text="Trim the GPS Track", command=trim_gps, state=DISABLED)
         self.button_trim_gps.pack(padx=5, pady=1)
 
+        # Radar Action Frame
         frame_radar_action = Frame(frame_action, bd=2, relief=RIDGE)
         frame_radar_action.pack(side=LEFT, padx=5, pady=1, fill=Y)
 
@@ -685,13 +743,14 @@ class MainGUI(Tk.Frame):
         button_manually_select_radar = Button(frame_radar_action, text="Select Radars", command=get_manual_radars,
                                               state=DISABLED)
         button_manually_select_radar.pack(padx=5, pady=1)
-        button_process_radar = Button(frame_radar_action, text="Process Radar Images", command=process_images,
+        button_process_radar = Button(frame_radar_action, text="Process Radar Images", command=process_radar_images,
                                       state=DISABLED)
         button_process_radar.pack(padx=5, pady=1)
         button_create_radar_kml = Button(frame_radar_action, text="Create the KML file", command=create_radar_kml,
                                          state=DISABLED)
         button_create_radar_kml.pack(padx=5, pady=1)
 
+        # Media Action Frame
         frame_media_action = Frame(frame_action, bd=2, relief=RIDGE)
         frame_media_action.pack(side=LEFT, padx=5, pady=1, fill=Y)
 
@@ -706,17 +765,26 @@ class MainGUI(Tk.Frame):
                                          state=DISABLED)
         button_create_media_kml.pack(padx=5, pady=1)
 
+        # Update Everything
         self.parent.update_idletasks()
+
+        # Make sure that the minimum size is no smaller that what is already displayed
         self.parent.after_idle(lambda: self.parent.minsize(self.parent.winfo_width(), self.parent.winfo_height()))
 
+        # Get icon data, decode from base 64, decompress
         icon = zlib.decompress(base64.b64decode(icon_data.get_icon_data()))
 
+        # Create a temp file path
         icon_path = tempfile.mkstemp()[1]
+
+        # Open temp file, write icon data to path
         with open(icon_path, 'wb') as icon_file:
             icon_file.write(icon)
 
+        # Set the icon for window to temp icon path
         self.parent.iconbitmap(default=icon_path)
 
 
+# Exit if the main window is closed
 def window_close():
     sys.exit(1)
