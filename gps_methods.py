@@ -23,7 +23,7 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     # In KML file, there are "When" tags and "Coord" tags.
     # Read line, if 'when tag' put in 'when' list. If 'coord' put in 'coord' list
 
-    # mid calculates how often to update the user on a percentage. 42 is suggested here, being the meaning of life
+    # mid calculates how many updates to send to the user. 42 is suggested here, being the meaning of life.
 
     mid = (len(track))/42
 
@@ -42,6 +42,7 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
 
             locations.insert(len(locations), (lat, lon, height))
 
+    # Update the User
     tb.tb_update("")
     tb.tb_update("Completed")
     tb.tb_update("")
@@ -59,11 +60,18 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     tb.tb_update("Processing Points")
     tb.tb_update("Please Wait")
     tb.tb_update("")
+
     for i in range(0, len(when)):
+        # Create GPSPoint Object based on time, location (lat, lon, height) and put in the timezone
         gps_p = GPSPoint(when[i], locations[i][0], locations[i][1], locations[i][2], tz)
+
+        # Put the created object in a list
         gps_points_list.insert(len(gps_points_list), gps_p)
 
+    # Update the User
     tb.tb_update(str(len(gps_points_list)) + " points were successfully imported")
+
+    # Close the file
     f.close()
     tb.tb_update("------------------------------------------------------------")
     tb.tb_update("")
@@ -72,15 +80,19 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     # Assuming that the KML file is created in Chronological order, this is the first and last entry.
     # TODO Introduce code that sorts the epochs and finds the first and last to remove this assumption.
 
+    # First GPS Point
     start_time = gps_points_list[0].get_time()
+
+    # Last GPS Point
     end_time = gps_points_list[len(gps_points_list) - 1].get_time()
+
+    # Update User
     tb.tb_update("The track starts from " + arrow.get(start_time).to(tz).format('YYYY-MM-DD HH:mm:ss'))
     tb.tb_update("and finishes at       " + arrow.get(end_time).to(tz).format('YYYY-MM-DD HH:mm:ss'))
     tb.tb_update("")
     tb.tb_update("------------------------------------------------------------")
 
     # Return the gps points list, as well as the start time and end time
-
     return gps_points_list, start_time, end_time
 
 
@@ -94,7 +106,7 @@ def get_distance_from_coordinates(lat1, lon1, lat2, lon2):
     # Calculate the distance between two gps points
     # This uses the "haversine formula"
     # Taken from the internet
-    # Calculates the distance using the big circle
+    # Calculates the distance using the big circle equation
 
     # Radius of the Earth, in meters
     r = int(6371e3)
