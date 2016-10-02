@@ -707,8 +707,8 @@ class MainGUI(Frame):
                                              variable=self.radar_offline)
 
         # Hard coded to disable option of downloading radar frames
-        self.radar_offline.set(1)
-        checkbox_radar_offline.config(state=DISABLED) # Set this line to NORMAL to enable
+        self.radar_offline.set(0)
+        checkbox_radar_offline.config(state=NORMAL)  # Set this line to NORMAL to enable
 
         checkbox_radar_offline.pack(padx=5, pady=1)
         checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames",

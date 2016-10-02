@@ -3,6 +3,7 @@ import arrow
 
 class MediaObject:
 
+    # Media object has variable as named below
     __location_name__ = str()
     __epoch__ = int()
     __localtime__ = str()
@@ -13,6 +14,8 @@ class MediaObject:
     __group_number__ = int()
     __tz__ = str()
 
+    # When creating a Media Object, all that is required is to tell the epoch. Will automatically calculate the iso
+    # and local time
     def __init__(self, epoch, fn, lat, lon, tz):
         self.__epoch__ = epoch
         self.__fn__ = fn
@@ -22,6 +25,7 @@ class MediaObject:
         self.__localtime__ = self.__iso__.to(tz).format('YYYY-MM-DD HH:mm:ss')
         self.__location_name__ = ""
 
+    # Getters and Setters as needed
     def get_epoch(self):
         return self.__epoch__
 

@@ -5,7 +5,7 @@ from radar_db import RadarDB
 from radar_overlays import RadarFrameOffline
 
 
-# Function to return nearest IDRs according to gps_track
+# Function to return list of nearest IDRs according to gps_track
 def get_near_idr_list(gps_track, tb):
 
     tb.tb_update("")
@@ -14,7 +14,6 @@ def get_near_idr_list(gps_track, tb):
     tb.tb_update("Now matching IDR Codes to the GPS Track. This may take some time")
 
     # Create list of IDR Codes to match up and see how far away they are.
-
     radar_working_list = ['IDR773', 'IDR093', 'IDR633', 'IDR783', 'IDR423', 'IDR073', 'IDR413', 'IDR363', 'IDR193',
                           'IDR173', 'IDR393', 'IDR733', 'IDR243', 'IDR163', 'IDR153', 'IDR753', 'IDR223', 'IDR293',
                           'IDR563', 'IDR723', 'IDR253', 'IDR233', 'IDR053', 'IDR443', 'IDR083', 'IDR673', 'IDR503',
@@ -36,17 +35,19 @@ def get_near_idr_list(gps_track, tb):
     radar_db = RadarDB('IDR023')
 
     tb.tb_update("Processing 256km Radar sites")
+
+    # Iterate through list of GPS points
     for i in range(0, len(gps_track)):
-        # Iterate through GPS Points
         lat1 = gps_track[i].get_location()[1]
         lon1 = gps_track[i].get_location()[0]
         k = 0
 
+        # Iterate through the IDR working list to calculate distance
         for j in range(0, len(radar_working_list)):
-            # Iterate through IDRs
             lat2 = radar_db.get_location(radar_working_list[j-k])[0]
             lon2 = radar_db.get_location(radar_working_list[j-k])[1]
 
+            # The method returns distance in meters, easier to work in kilometers
             distance = int(gps_methods.get_distance_from_coordinates(lat1, lon1, lat2, lon2))/1000
 
             if distance < 362:  # sqrt(2)*max distance which is 256kms. This allows for corners of the radar
@@ -153,6 +154,7 @@ def get_near_idr_list(gps_track, tb):
     return radar_set
 
 
+# Method to create a database of the local radar frames (locally stored)
 def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
     tb.tb_update("")
@@ -162,6 +164,7 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
     tb.tb_update("")
     tb.tb_update("Please Wait...")
 
+    # Check the radar path in root directory to see what radar locations are downloaded
     radar_idr_paths = [x[0] for x in os.walk(radar_path)]
     radar_idr_paths.remove(radar_path)
 
@@ -169,28 +172,37 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
     print radar_idr_paths
 
+    # Iterate through each radar locally stored
     for j in range(0, len(radar_idr_paths)):
 
         print radar_idr_paths[j].split("\\")[-1]
 
+        # If the locally stored radar iteration is not in the radar set list, then it is not needed
         if not radar_idr_paths[j].split("\\")[-1] in radar_set:
             continue
 
         idr_frame_db = []
+
+        # Get a list of all the frames in the radar path iterated
         frame_filename_list = os.listdir(radar_idr_paths[j])
 
         # Check if this folder is empty, if so then skip it.
         if len(frame_filename_list) == 0:
             continue
 
+        # Iterate through each frame in the folder
         for i in range(0, len(frame_filename_list)):
+            # Need to get the filename (to decode the time, all radar frames should be stored with the same pattern,
+            # so can be hard coded without needing to use the pattern list. Also shouldn't need to try and catch error
             filename = frame_filename_list[i]
             pattern = "YYYYMMDDHHmm"
             time = arrow.get(filename.split('.')[2], pattern)
             epoch = time.timestamp
+            # If the radar frame time code is during the chase, then create an object for frame
             if int(start_time) < int(epoch) < int(end_time):
                 idr_frame_db.append(RadarFrameOffline(frame_filename_list[i]))
 
+        # Once the iteration is complete, put the db of frames for that location, in the frame database
         frame_db.append(idr_frame_db)
 
     print frame_db

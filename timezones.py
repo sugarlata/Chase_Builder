@@ -576,6 +576,8 @@ WET
 Zulu
 --FINAL--"""
 
+# Code below reformats the above code into two lists to be used in the gui, option 1 and option 2
+
     buf = StringIO.StringIO(tzs)
 
     option1 = []

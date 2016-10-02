@@ -1,4 +1,6 @@
 def get_icon_data():
+
+    # Icon File is compressed, and encoded to base 64. This is the data.
     icon = "eJztfQd4lFUW9oRAGoSQhACBJITee6+hBFBAcMECUgSRYgBpYgEkIIqIPyKuLqjrb1lxdV137a6/ggiuZdW1d91FUVTQCIIaQLj/+" \
            "97JO5yMygQpYXfz8VwmM/PN993vvqfdc849NxCIwr9FiwL4PzvQOC4qUC0QCDRGw0f80H8ePKICGysHfCs7yo6yo+woO8qOsqPsKD" \
            "vKjrKj7Cg7yo6yo+woO8qO/4TDOefbrFmzYs8888z0U045pUvVqlW746tuKSkp3QcOHNgFn9eaPXt2rM79peOFF17w348ZMybu3HP" \

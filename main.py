@@ -11,6 +11,7 @@ import sys
 
 class MainApplication:
 
+    # Initial variables
     tb = ""
     gps_track_filename = ""
     root_path = ""
@@ -36,6 +37,8 @@ class MainApplication:
     time_path_list = []
     time_list = []
 
+    # Different Hard Coded Options
+
     # List of patterns for matching time codes. Second item in list is string for removal
     pattern_list = [('YYYY:MM:DD HH:mm:ss', ''), ('YYYYMMDD_HHmmss', 'VID_'),
                     ('YYYY-MM-DD HH.mm.ss', ''), ('YYYY.MM.DD_HH.mm.ss', '')]
@@ -50,28 +53,35 @@ class MainApplication:
 
         # ---------------------------------- Initialisation ----------------------------------
 
+        # Hard code in location of FFMPEG for the moment
         self.ffmpeg_location = r"C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmpeg.exe"
 
+        # Automatic Download of Radar is enabled or disabled
         self.download_radar_module_enabled = False
+
+        # Correct radar blink (gets changed according to check box by gui.py
         self.correct_radar_blink_tf = True
 
     def gui_main(self):
 
         # ---------------------------------- GUI Initialise ----------------------------------
 
+        # Create root object
         root = Tk.Tk()
         MainGUI(root, self)
         root.mainloop()
 
+        # Once finished the main loop, exit.
         sys.exit(1)
 
     def set_tb(self, tb):
+        # Pass the text updater box to self referenced object, then can pass to different lines of code as needed,
+        # passing self.tb
         self.tb = tb
 
     def gps_load_track(self):
 
         # Open the KML File
-
         self.gps_track, self.start_time, self.end_time = gps_methods.get_gps_track_list(self.gps_track_filename,
                                                                                         self.tz, self.tb)
 
@@ -84,13 +94,15 @@ class MainApplication:
         self.radar_set = radar_methods.get_near_idr_list(self.gps_track, self.tb)
 
     def process_radar(self):
-        # If public, skip to make radar list from Files
-        # If private, check website for frames and that they are downloaded
-
+        # If app is publicly released, skip to make radar list from files, need to check the self.download_radar_module
+        # If app is private, check website for frames and that they are downloaded
         if self.download_radar_module:
+            # Method to download radar frames from external module "radar_download_frames"
+            # This method also catalogues the radars into the self.frames_db
             self.frames_db = radar_download_frames.get_online_frames(self.radar_set, self.radar_path, self.start_time,
                                                                      self.end_time, self.root_path, self.tb)
         else:
+            # Method to search local filesystem according to convention and catalogue the files into self.frames_db
             self.frames_db = radar_methods.get_local_radar_frames_db(self.radar_set, self.radar_path, self.start_time,
                                                                      self.end_time, self.tb)
 
@@ -99,7 +111,6 @@ class MainApplication:
         radar_methods.correct_radar_blink(self.frames_db)
 
     def create_radar_kml_file(self):
-
         # Create KML File
         kml_creator.create_radar_kml(self.frames_db, self.root_path, self.radar_path, self.tb)
 
@@ -141,6 +152,7 @@ class MainApplication:
             str_time.set(self.time_len)
 
         else:
+            # If there is no media found at all.
             print "------------------------------------------------------------"
             print ""
             print "No Media found for this chase"
@@ -177,8 +189,11 @@ class MainApplication:
 
 if __name__ == '__main__':
     try:
+        # Call the main application
         main_app = MainApplication()
         main_app.gui_main()
+
+    # Attempt to catch all errors, this doesn't work as yet.
     except Exception, err:
         print "A Significant Error has occurred and the program must exit"
         print "Error Code:"

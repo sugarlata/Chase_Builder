@@ -3,6 +3,8 @@ import math
 
 class RadarDB:
 
+    # Variable for each radar station
+
     __title__ = str()
     __updateInterval__ = int()
     __location__ = float(), float()
@@ -17,13 +19,16 @@ class RadarDB:
     __nsew512__ = float(), float(), float(), float()
 
     def __init__(self, idr_code):
+        # When initiating, use IDR code
         idr = str(idr_code[:-1]) + "3"
         self.select_radar(idr)
 
+    # Method to calculate the North, South, East and West box, i.e. the limits for the overlay
     def calculate_nsew_s(self):  # Function to return the radar bounds for KML File
 
         def calculate_nsew(latitude, longitude, distance):
 
+            # Calculations to figure out the limits
             d = float(distance)
             r = float(6371)
 
@@ -72,6 +77,7 @@ class RadarDB:
         self.__nsew512__ = calculate_nsew(lat, lon, distance512)
 
     def select_radar(self, idr):
+        # All radar sites in Australia, hardcoded in.
         if idr == 'IDR773':
             self.__title__ = 'Warruwi'
             self.__updateInterval__ = 6
@@ -550,8 +556,10 @@ class RadarDB:
             self.__512__ = True
             self.__doppler__ = True
 
+        # Calculate NSEW as needed
         self.calculate_nsew_s()
 
+    # Getters and Setters for whether a radar type exists for this radar
     def get_doppler(self, idr_code):
         idr = str(idr_code[:-1]) + "3"
         self.select_radar(idr)
@@ -572,21 +580,25 @@ class RadarDB:
         self.select_radar(idr)
         return self.__256__
 
+    # Return the location
     def get_location(self, idr_code):
         idr = str(idr_code[:-1]) + "3"
         self.select_radar(idr)
         return self.__location__
 
+    # Return the name of the location
     def get_title(self, idr_code):
         idr = str(idr_code[:-1]) + "3"
         self.select_radar(idr)
         return self.__title__
 
+    # Find out how often (in minutes) the radar normally updates
     def get_update_interval(self, idr_code):
         idr = str(idr_code[:-1]) + "3"
         self.select_radar(idr)
         return self.__updateInterval__
 
+    # Return NSEW box
     def get_nsew(self, idr_code):
         if idr_code[-1] == "2":
             return self.__nsew256__

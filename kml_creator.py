@@ -3,11 +3,13 @@ import simplekml
 import os
 from radar_db import RadarDB
 
-
+# Moethod for creating a trimmed GPS Track
 def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_filename, tz):
 
+    # Create a kml object
     kml = simplekml.Kml(name="Chase Track", open=1)
 
+    # Create the kml filename. This will be the original file, with '-trimmed' added onto the end of it.
     trimmed_kml_filename = root_path + "/" + os.path.splitext(os.path.basename(gps_track_filename))[0] + "-trimmed.kml"
 
     when = []
@@ -16,16 +18,19 @@ def create_gps_track_kml(gps_track, start_time, end_time, root_path, gps_track_f
     start_position = 0
     end_position = 0
 
+    # gps_track[] is the full list. Need to find the trim points. Look through the list and find the start and end point
     for i in range(0, len(gps_track)):
         if gps_track[i].get_time() == start_time:
             start_position = i
         if gps_track[i].get_time() == end_time:
             end_position = i
 
+    # Create new track lists from data between start trim and end trim
     for i in range(start_position, end_position):
         when.append(gps_track[i].get_iso_time())
         coordinates.append(gps_track[i].get_location())
         new_gps_track.append(gps_track[i])
+
 
     time_now = arrow.now(tz)
 
