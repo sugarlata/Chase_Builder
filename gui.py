@@ -1,4 +1,3 @@
-import Tkinter as Tk
 import base64
 import zlib
 import tempfile
@@ -62,14 +61,18 @@ class TimezoneSelector(Toplevel):
     location_shorter = []
     current_region = ""
     grandfather = ""
+    parent = ""
+    tb = ""
 
-    def __init__(self, grandfather):
+    def __init__(self, grandfather, parent, tb):
         Toplevel.__init__(self)
 
         # Create the Timezone GUI
         self.grandfather = grandfather
+        self.parent = parent
         self.protocol("WM_DELETE_WINDOW", self.window_close)
         self.wm_title("Time Zone Selector")
+        self.tb = tb
 
         # Load lists from Timezones object into local lists
         self.region, self.locations = timezones.get_options()
@@ -78,7 +81,7 @@ class TimezoneSelector(Toplevel):
         main_frame = Frame(self)
         main_frame.pack(padx=5, pady=1, fill=BOTH, expand=True)
 
-        # Window split into top brame and bottom frame
+        # Window split into top frame and bottom frame
         frame_top = Frame(main_frame)
         frame_top.pack(pady=2, expand=True, fill=BOTH)
 
@@ -98,6 +101,8 @@ class TimezoneSelector(Toplevel):
         scrollbar_region.config(command=self.listbox_region.yview)
         # Listbox doesn't have a feature to call method on change value. Need to set this manually:
         self.listbox_region.bind('<<ListboxSelect>>', self.on_select)
+        self.listbox_region.select_set(first=5)
+        self.listbox_region.activate(5)
 
         # Populate the Region Listbox according to local region list
         k = 0
@@ -130,7 +135,8 @@ class TimezoneSelector(Toplevel):
         button_cancel.pack(padx=3, side=LEFT)
 
     # Method to populate locations list when region list value is changed
-    def on_select(self):
+    def on_select(self, blind):
+        print blind
         k = 0
 
         # Delete everything in the location listbox
@@ -154,8 +160,13 @@ class TimezoneSelector(Toplevel):
     def ok_button(self):
         # Note current Timezone, return this in format usable by Arrow Module.
         tz = self.current_region + "/" + self.location_shorter[self.listbox_location.curselection()[0]]
+
+        # Set the time zone in the grandfather
         self.grandfather.tz = tz.replace(' - ', '/')
-        print self.grandfather.tz
+
+        # Update the time zone shown in the GUI
+        self.parent.str_timezone.set(self.grandfather.tz)
+        self.tb.tb_update("Time Zone updated to: " + self.grandfather.tz)
         # Close window
         self.withdraw()
 
@@ -445,7 +456,7 @@ class TrimGPS(Toplevel):
 class MainGUI(Frame):
     parent = ""
     grandparent = ""
-    tz = ""
+    # tz = "Australia/Melbourne"
 
     def __init__(self, parent, grandparent):
 
@@ -462,7 +473,7 @@ class MainGUI(Frame):
 
         def set_timezone():
             # Open the Timezone Selector Class, no need keep the object
-            TimezoneSelector(self.grandparent)
+            TimezoneSelector(self.grandparent, self, text_box_main)
 
         def get_root_button():
 
@@ -585,6 +596,7 @@ class MainGUI(Frame):
 
         # Create the StringVars for Main Window
         self.str_root_folder = StringVar()
+        self.str_timezone = StringVar()
         self.str_gps_file = StringVar()
         self.str_gps_start = StringVar()
         self.str_gps_end = StringVar()
@@ -627,12 +639,19 @@ class MainGUI(Frame):
         frame_detail = Frame(frame_main)
         frame_detail.pack(expand=False)
 
-        # Frame for General Details: Root Folder
+        # Frame for General Details: Root Folder, Timezone
         frame_general_detail = Frame(frame_detail, bd=2, relief=RIDGE)
         frame_general_detail.pack(side=LEFT, padx=5, pady=1, fill=BOTH)
 
         label_general_detail = Label(frame_general_detail, text='General Details')
         label_general_detail.pack(padx=5, pady=1)
+
+        frame_timezone = Frame(frame_general_detail)
+        frame_timezone.pack()
+
+        label_timezone = Label(frame_timezone, textvariable=self.str_timezone)
+        label_timezone.pack(side=LEFT)
+        self.str_timezone.set(self.grandparent.tz)
 
         frame_root_folder = Frame(frame_general_detail)
         frame_root_folder.pack()
@@ -706,7 +725,9 @@ class MainGUI(Frame):
         checkbox_radar_offline = Checkbutton(frame_settings, text="Use Locally Stored Radar",
                                              variable=self.radar_offline)
 
+        # --------------------------------------------------------
         # Hard coded to disable option of downloading radar frames
+        # --------------------------------------------------------
         self.radar_offline.set(0)
         checkbox_radar_offline.config(state=NORMAL)  # Set this line to NORMAL to enable
 

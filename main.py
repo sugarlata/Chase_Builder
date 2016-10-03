@@ -188,15 +188,15 @@ class MainApplication:
 
 
 if __name__ == '__main__':
-    try:
-        # Call the main application
-        main_app = MainApplication()
-        main_app.gui_main()
+    # try:
+    # Call the main application
+    main_app = MainApplication()
+    main_app.gui_main()
 
     # Attempt to catch all errors, this doesn't work as yet.
-    except Exception, err:
-        print "A Significant Error has occurred and the program must exit"
-        print "Error Code:"
-        print str(err)
-        print "Please contact Nathan Sgarlata: nathan.sgarlata+chasebuilder@gmail.com for troubleshooting"
-        exit()
+    # except Exception, err:
+    #     print "A Significant Error has occurred and the program must exit"
+    #     print "Error Code:"
+    #     print str(err)
+    #     print "Please contact Nathan Sgarlata: nathan.sgarlata+chasebuilder@gmail.com for troubleshooting"
+    #     exit()
