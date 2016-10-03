@@ -108,13 +108,13 @@ class MainApplication:
 
     def correct_blink(self):
         # Correct the radar blink. See declaration for more information
-        radar_methods.correct_radar_blink(self.frames_db)
+        radar_methods.correct_radar_blink(self.frames_db, self.tb)
 
     def create_radar_kml_file(self):
         # Create KML File
         kml_creator.create_radar_kml(self.frames_db, self.root_path, self.radar_path, self.tb)
 
-    def find_media(self, str_photos, str_videos, str_time):
+    def find_media(self, str_photos, str_videos, str_time, tb):
         # ---------------------------------- Media ----------------------------------
 
         # Check that the media path exists
@@ -128,36 +128,36 @@ class MainApplication:
             # Get Photo Exif Data (time taken)
             self.photo_list, self.rejected_photos_filename_list =\
                 media_methods.get_photo_exif_data(self.media_path, self.photo_filename_list, self.start_time,
-                                                  self.end_time, self.tz)
+                                                  self.end_time, self.tz, self.tb)
 
             # Get video list
             self.video_filename_list = media_methods.get_video_list(self.media_path)
 
             # Get time from filename
             self.video_list, self.rejected_video_filename_list =\
-                media_methods.set_video_time(self.video_filename_list, self.pattern_list, self.tz)
+                media_methods.set_video_time(self.video_filename_list, self.pattern_list, self.tz, self.tb)
             self.video_len = len(self.video_filename_list)
             str_videos.set(self.video_len)
 
             # Get Time lapse List
-            self.time_path_list = media_methods.get_time_list(self.media_path, self.pattern_list, self.tz)
+            self.time_path_list = media_methods.get_time_list(self.media_path, self.pattern_list, self.tz, self.tb)
 
             # Create the video
             media_methods.create_time_lapse_video(self.ffmpeg_location, self.media_path, self.time_path_list,
-                                                  self.frame_rate)
+                                                  self.frame_rate, self.tb)
 
             # Create db of videos and the time they were taken
-            self.time_list = media_methods.set_time_time(self.time_path_list, self.pattern_list, self.tz)
+            self.time_list = media_methods.set_time_time(self.time_path_list, self.pattern_list, self.tz, self.tb)
             self.time_len = len(self.time_list)
             str_time.set(self.time_len)
 
         else:
             # If there is no media found at all.
-            print "------------------------------------------------------------"
-            print ""
-            print "No Media found for this chase"
-            print ""
-            print "------------------------------------------------------------"
+            tb.tb_update("------------------------------------------------------------")
+            tb.tb_update("")
+            tb.tb_update("No Media found for this chase")
+            tb.tb_update("")
+            tb.tb_update("------------------------------------------------------------")
 
     def create_media_kml(self):
 
@@ -165,7 +165,7 @@ class MainApplication:
         self.photo_list = media_methods.set_media_location(self.photo_list, self.gps_track)
 
         # Resize photos as necessary
-        media_methods.set_resized_photos(self.media_path, self.photo_list)
+        media_methods.set_resized_photos(self.media_path, self.photo_list, self.tb)
 
         # Group Photos together
         media_methods.set_media_groups(self.photo_list)
@@ -184,7 +184,7 @@ class MainApplication:
 
         # Create the Media KML
         kml_creator.create_media_kml(self.root_path, self.media_path, self.photo_list, self.video_list, self.time_list,
-                                     self.dwell_time)
+                                     self.dwell_time, self.tb)
 
 
 if __name__ == '__main__':

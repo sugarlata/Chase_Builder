@@ -83,7 +83,6 @@ def create_radar_kml(frame_db, root_path, radar_path, tb):
 
         # List of radar overlay objects
         frame_list = frame_db[k]
-        print frame_list
         # Get the IDR Code. Each frame in the sub list will be identical
 
         idr_code = frame_list[0].get_filename().split('.')[0]
@@ -132,7 +131,7 @@ def create_radar_kml(frame_db, root_path, radar_path, tb):
     tb.tb_update("")
 
 
-def create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time):
+def create_media_kml(root_path, media_path, photo_list, video_list, time_list, dwell_time, tb):
     # Create HTML Blocks for Photos and Videos:
 
     photo_html_block = r"""<![CDATA[<font size = "18">
@@ -162,7 +161,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
     kml_folders = []
 
     if len(photo_list) == 0:
-        print "There are no photos"
+        tb.tb_update("There are no photos")
     else:
         # There are photos to process
         # Need to create a kml folder for photos, then create the objects in this folder.
@@ -255,7 +254,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
 
     # Code is identical, except deals with the video side of things
     if len(video_list) == 0:
-        print "There are no videos"
+        tb.tb_update("There are no videos")
     else:
         # There are videos to process
         # Need to create a kml folder for videos, then create the objects in this folder.
@@ -348,7 +347,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
 
     # Code is identical, except deals with the time lapse side of things
     if len(time_list) == 0:
-        print "There are no time lapse videos"
+        tb.tb_update("There are no time lapse videos")
     else:
         # There are time lapse videos to process
         # Need to create a kml folder for time lapse videos, then create the objects in this folder.
@@ -437,7 +436,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
                                                                                                      filename)
 
     if len(kml_folders) == 0:
-        print "There was no media found"
+        tb.tb_update("There was no media found")
     else:
         os.chdir(root_path)
         kml.save('Media.kml')

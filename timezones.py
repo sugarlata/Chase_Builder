@@ -585,7 +585,6 @@ Zulu
 
     while True:
         l = buf.readline()
-        print l
         if l == "--FINAL--":
             break
         else:

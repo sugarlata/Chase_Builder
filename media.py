@@ -22,7 +22,10 @@ class MediaObject:
         self.__lat__ = lat
         self.__lon__ = lon
         self.__iso__ = arrow.get(epoch)
-        self.__localtime__ = self.__iso__.to(tz).format('YYYY-MM-DD HH:mm:ss')
+        if self.__iso__.to(tz).format('ss') == "00":
+            self.__localtime__ = self.__iso__.to(tz).format('YYYY-MM-DD HH:mm')
+        else:
+            self.__localtime__ = self.__iso__.to(tz).format('YYYY-MM-DD HH:mm:ss')
         self.__location_name__ = ""
 
     # Getters and Setters as needed

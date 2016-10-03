@@ -136,7 +136,9 @@ class TimezoneSelector(Toplevel):
 
     # Method to populate locations list when region list value is changed
     def on_select(self, blind):
-        print blind
+        if 1 == 0:
+            print blind
+
         k = 0
 
         # Delete everything in the location listbox
@@ -579,7 +581,7 @@ class MainGUI(Frame):
 
         def find_media():
             # Find Media, throw in StringVars to update
-            self.grandparent.find_media(self.str_photos, self.str_videos, self.str_time)
+            self.grandparent.find_media(self.str_photos, self.str_videos, self.str_time, text_box_main)
 
             # Enable / Disable Buttons
             button_create_media_kml.config(state=NORMAL)

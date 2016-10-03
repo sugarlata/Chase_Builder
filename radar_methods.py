@@ -150,7 +150,6 @@ def get_near_idr_list(gps_track, tb):
     tb.tb_update("------------------------------------------------------------")
     tb.tb_update("")
 
-    print radar_set
     return radar_set
 
 
@@ -170,12 +169,10 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
     frame_db = []
 
-    print radar_idr_paths
-
     # Iterate through each radar locally stored
     for j in range(0, len(radar_idr_paths)):
 
-        print radar_idr_paths[j].split("\\")[-1]
+        tb.tb_update(radar_idr_paths[j].split("\\")[-1])
 
         # If the locally stored radar iteration is not in the radar set list, then it is not needed
         if not radar_idr_paths[j].split("\\")[-1] in radar_set:
@@ -205,7 +202,6 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
         # Once the iteration is complete, put the db of frames for that location, in the frame database
         frame_db.append(idr_frame_db)
 
-    print frame_db
     tb.tb_update("")
     tb.tb_update("Completed")
     tb.tb_update("")
@@ -214,20 +210,20 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
     return frame_db
 
 
-def correct_radar_blink(frames_db):
+def correct_radar_blink(frames_db, tb):
 
     # Correct the blinking in radar frames. This is caused when the time between frames is not perfectly 6 minutes.
     # This causes the 6 min appearance of frames to cause blinking. This is corrected by resetting the end time of the
     # frame appearance to the start time of the frame following.
-    print ""
-    print "Correcting the blinking radar frames"
-    print ""
+    tb.tb_update("")
+    tb.tb_update("Correcting the blinking radar frames")
+    tb.tb_update("")
     for i in range(len(frames_db)):
         for j in range(0, len(frames_db[i])-1):
             frames_db[i][j].set_end_time(frames_db[i][j+1].get_time())
 
-    print ""
-    print "Completed"
-    print ""
+    tb.tb_update("")
+    tb.tb_update("Completed")
+    tb.tb_update("")
 
     return frames_db

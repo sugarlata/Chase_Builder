@@ -32,7 +32,7 @@ def get_photo_list(media_path):
 
         # --------------------------------------------------------------------
         # **** For support of more photo extension types, edit code below ****
-        #---------------------------------------------------------------------
+        # --------------------------------------------------------------------
 
         if x.lower()[-4:] == "jpeg" or x.lower()[-3:] == "jpg":
             if x.lower()[:2] != "r-":
@@ -42,7 +42,7 @@ def get_photo_list(media_path):
     return photo_filename_list
 
 
-def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, tz):
+def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, tz, tb):
 
     # Create two lists, one that will have photo objects, the other is a list of file names that could not be
     # time matched. This list will later be used to manually set the time for them and added as photo objects into the
@@ -79,14 +79,14 @@ def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, t
 
         # Catch the different errors possible thrown by parsing EXIF Tags
         except KeyError:
-            print ""
-            print photo_filename_list[i] + ":"
-            print "No exif Data for time taken, either manually select the time created or skip this photo"
+            tb.tb_update("")
+            tb.tb_update(photo_filename_list[i] + ":")
+            tb.tb_update("No exif Data for time taken, either manually select the time created or skip this photo")
             skip_photo = True
         except AttributeError:
-            print ""
-            print photo_filename_list[i] + ":"
-            print "No exif Data, either manually select the time created or skip this photo"
+            tb.tb_update("")
+            tb.tb_update(photo_filename_list[i] + ":")
+            tb.tb_update("No exif Data, either manually select the time created or skip this photo")
             skip_photo = True
 
         # If there was an error, add the photo to the rejected photo file names list
@@ -102,8 +102,8 @@ def get_photo_exif_data(media_path, photo_filename_list, start_time, end_time, t
 
             # Check if the photo was taken outside the chase time boundary
             if photo_epoch < start_time or photo_epoch > end_time:
-                print ""
-                print photo_filename_list[i], "was not taken during the specified chase time"
+                tb.tb_update("")
+                tb.tb_update(photo_filename_list[i] + " was not taken during the specified chase time")
                 # Add photo to the rejected photo file name list. This means it can be manually time coded later if the
                 # user desires
                 rejected_photo_filename_list.insert(len(rejected_photo_filename_list), photo_filename_list[i])
@@ -157,15 +157,15 @@ def set_media_location(media_list, gps_track):
     return media_list
 
 
-def set_resized_photos(media_path, photo_list):
+def set_resized_photos(media_path, photo_list, tb):
 
     # Need to check through all photos and ensure that a photo has a reasonable size.
     # Iterate through the entire media path list
     for i in range(0, len(photo_list)):
         # Update user on current iteration
-        print ""
-        print "(" + str(i + 1) + "/" + str(len(photo_list)) + ") Attempting to create a resized version of " + str(
-            photo_list[i].get_filename())
+        tb.tb_update("")
+        tb.tb_update("(" + str(i + 1) + "/" + str(len(photo_list)) + ") Attempting to create a resized version of " +
+                     str(photo_list[i].get_filename()))
 
         # Open file to store the size of the photo
         image = PIL.Image.open(media_path + "\\" + photo_list[i].get_filename())
@@ -205,7 +205,7 @@ def set_resized_photos(media_path, photo_list):
             else:
                 # Already resized, but need to amend the file name
                 image_filename = image_filename_resized
-                print "Already done"
+                tb.tb_update("Already done")
 
         photo_list[i].set_filename(image_filename)
 
@@ -281,7 +281,7 @@ def get_video_list(media_path):
     return video_filename_list
 
 
-def set_video_time(video_filename_list, pattern_list, tz):
+def set_video_time(video_filename_list, pattern_list, tz, tb):
 
     # Need to match the video to the possible time code
     # Similar to the photo code.
@@ -322,13 +322,13 @@ def set_video_time(video_filename_list, pattern_list, tz):
                 # If it fails, it will continue to the next iteration in the pattern list
                 if j == len(pattern_list)-1:
                     # If it fails and can't find a time, add it to a rejected list for user to determine manually.
-                    print "Could not match time for", filename
+                    tb.tb_update("Could not match time for " + filename)
                     rejected_video_filename_list.insert(len(rejected_video_filename_list), video_filename_list[i])
 
     return video_list, rejected_video_filename_list
 
 
-def get_time_list(media_path, pattern_list, tz):
+def get_time_list(media_path, pattern_list, tz, tb):
 
     # Read through the media folder for directories, if there are directories that can be time coded
     # successfully, assume that they are time lapse folders, add to the time_path_list
@@ -356,13 +356,12 @@ def get_time_list(media_path, pattern_list, tz):
             # If can't match time
             except arrow.parser.ParserError:
                 if j == len(pattern_list) - 1:
-                    print "The time code for folder", time_path, "in Media\ could not be interpreted"
+                    tb.tb_update("The time code for folder " + time_path + " in Media\ could not be interpreted")
 
-    print time_path_list
     return time_path_list
 
 
-def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_rate):
+def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_rate, tb):
 
     # Example of command line call
     # "C:\Users\Nathan\Documents\Development\Chaselog\Chaselog\ffmpeg.exe" -f image2 -r 25
@@ -412,10 +411,10 @@ def create_time_lapse_video(ffmpeg_location, media_path, time_path_list, frame_r
             os.rename(time_path_list[i] + "-timelapse.mp4", media_path + "\\" + time_path_list[i] + "-timelapse.mp4")
 
         else:
-            print time_path_list[i] + ".mp4 already rendered"
+            tb.tb_update(time_path_list[i] + ".mp4 already rendered")
 
 
-def set_time_time(time_path_list, pattern_list, tz):
+def set_time_time(time_path_list, pattern_list, tz, tb):
 
     # Method to interpret the time code of time lapse folders
     # Each folder will be in the format:
@@ -436,6 +435,6 @@ def set_time_time(time_path_list, pattern_list, tz):
                 break
             except arrow.parser.ParserError:
                 if j == len(pattern_list) - 1:
-                    print "There was an error matching the time for video", time_path + ".mp4"
+                    tb.tb_update("There was an error matching the time for video " + time_path + ".mp4")
 
     return time_list
