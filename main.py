@@ -62,14 +62,16 @@ class MainApplication:
         # Correct radar blink (gets changed according to check box by gui.py
         self.correct_radar_blink_tf = True
 
+        self.root = ""
+
     def gui_main(self):
 
         # ---------------------------------- GUI Initialise ----------------------------------
 
         # Create root object
-        root = Tk.Tk()
-        MainGUI(root, self)
-        root.mainloop()
+        self.root = Tk.Tk()
+        MainGUI(self.root, self)
+        self.root.mainloop()
 
         # Once finished the main loop, exit.
         sys.exit(1)
@@ -188,15 +190,5 @@ class MainApplication:
 
 
 if __name__ == '__main__':
-    # try:
-    # Call the main application
     main_app = MainApplication()
     main_app.gui_main()
-
-    # Attempt to catch all errors, this doesn't work as yet.
-    # except Exception, err:
-    #     print "A Significant Error has occurred and the program must exit"
-    #     print "Error Code:"
-    #     print str(err)
-    #     print "Please contact Nathan Sgarlata: nathan.sgarlata+chasebuilder@gmail.com for troubleshooting"
-    #     exit()

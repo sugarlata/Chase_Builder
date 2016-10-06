@@ -165,7 +165,10 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
 
     # Check the radar path in root directory to see what radar locations are downloaded
     radar_idr_paths = [x[0] for x in os.walk(radar_path)]
-    radar_idr_paths.remove(radar_path)
+    try:
+        radar_idr_paths.remove(radar_path)
+    except ValueError:
+        tb.tb_update("There was a file error that may cause the kml files to be created incorrectly")
 
     frame_db = []
 
@@ -192,6 +195,14 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
             # Need to get the filename (to decode the time, all radar frames should be stored with the same pattern,
             # so can be hard coded without needing to use the pattern list. Also shouldn't need to try and catch error
             filename = frame_filename_list[i]
+
+            # Just in case there is a file in the Radars folder structure that shouldn't be there, this will skip over
+            # any errant files
+            if filename[:3] != "IDR":
+                break
+            elif filename[-4:] != ".png":
+                break
+
             pattern = "YYYYMMDDHHmm"
             time = arrow.get(filename.split('.')[2], pattern)
             epoch = time.timestamp

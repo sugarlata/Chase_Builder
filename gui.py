@@ -502,36 +502,47 @@ class MainGUI(Frame):
 
         def open_gps_file():
 
-            # File Open options, currently only support kml.
-            file_open_options = dict(defaultextension='.kml', filetypes=[('KML file', '*.kml'), ('All files', '*.*')])
+            try:
+                # File Open options, currently only support kml.
+                file_open_options = dict(defaultextension='.kml', filetypes=[('KML file', '*.kml'), ('All files', '*.*')])
 
-            # Show GUI for opening the file track
-            gps_track_filename = askopenfilename(title="Select the Chase GPS Track",
-                                                 initialdir=self.grandparent.root_path, **file_open_options)
+                # Show GUI for opening the file track
+                gps_track_filename = askopenfilename(title="Select the Chase GPS Track",
+                                                     initialdir=self.grandparent.root_path, **file_open_options)
 
-            # Check that the filename is not blank
-            if not gps_track_filename == "":
-                # Clean up the filename and put it in main module
-                self.str_gps_file.set(gps_track_filename.split('/')[-1])
-                self.grandparent.gps_track_filename = gps_track_filename
+                # Check that the filename is not blank
+                if not gps_track_filename == "":
+                    # Clean up the filename and put it in main module
+                    self.str_gps_file.set(gps_track_filename.split('/')[-1])
+                    self.grandparent.gps_track_filename = gps_track_filename
 
-                # Load the track file into database
-                self.grandparent.gps_load_track()
+                    # Load the track file into database
+                    self.grandparent.gps_load_track()
 
-                # Set the local start and end times to the main modules
-                start_time = arrow.get(self.grandparent.start_time)
-                end_time = arrow.get(self.grandparent.end_time)
-                tz = self.grandparent.tz
+                    # Set the local start and end times to the main modules
+                    start_time = arrow.get(self.grandparent.start_time)
+                    end_time = arrow.get(self.grandparent.end_time)
+                    tz = self.grandparent.tz
 
-                # Set the local strings (in GUI) to match the main module
-                self.str_gps_start.set(start_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
-                self.str_gps_end.set(end_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
+                    # Set the local strings (in GUI) to match the main module
+                    self.str_gps_start.set(start_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
+                    self.str_gps_end.set(end_time.to(tz).format('DD-MM-YYYY HH:mm:ss'))
 
-                # Enable / Disable Buttons
-                button_open_gps_file.config(state=DISABLED)
-                self.button_trim_gps.config(state=NORMAL)
-                button_identify_radars.config(state=NORMAL)
-                button_find_media.config(state=NORMAL)
+                    # Enable / Disable Buttons
+                    button_open_gps_file.config(state=DISABLED)
+                    self.button_trim_gps.config(state=NORMAL)
+                    button_identify_radars.config(state=NORMAL)
+                    button_find_media.config(state=NORMAL)
+            # In the case of an Import Error, this is a critical error and the program needs to be restarted. Make
+            # user aware of this and force the restart using critical_restart method
+            except ImportError:
+                text_box_main.tb_update("")
+                text_box_main.tb_update("-----------------------------------------------")
+                text_box_main.tb_update("There was an error importing the track kml file")
+                text_box_main.tb_update("Please restart the program")
+                text_box_main.tb_update("-----------------------------------------------")
+                text_box_main.tb_update("")
+                critical_error()
 
         def trim_gps():
             # Run GPS Trim GUI
@@ -595,6 +606,23 @@ class MainGUI(Frame):
             # Create the Media KML File
             self.grandparent.create_media_kml()
             button_create_media_kml.config(state=DISABLED)
+
+        def critical_error():
+            # In case of a critical error, disable everything and force restart
+            button_set_tz.config(state=DISABLED)
+            button_help.config(state=DISABLED)
+            button_get_root.config(state=DISABLED)
+            button_open_gps_file.config(state=DISABLED)
+            self.button_trim_gps.config(state=DISABLED)
+            button_identify_radars.config(state=DISABLED)
+            button_manually_select_radar.config(state=DISABLED)
+            button_process_radar.config(state=DISABLED)
+            button_create_radar_kml.config(state=DISABLED)
+            button_find_media.config(state=DISABLED)
+            button_manual_time_media.config(state=DISABLED)
+            button_create_media_kml.config(state=DISABLED)
+            text_box_main.tb_update("")
+            text_box_main.tb_update("Please restart Chase Builder")
 
         # Create the StringVars for Main Window
         self.str_root_folder = StringVar()
@@ -730,12 +758,13 @@ class MainGUI(Frame):
         # --------------------------------------------------------
         # Hard coded to disable option of downloading radar frames
         # --------------------------------------------------------
-        self.radar_offline.set(0)
-        checkbox_radar_offline.config(state=NORMAL)  # Set this line to NORMAL to enable
+        self.radar_offline.set(1)
+        checkbox_radar_offline.config(state=DISABLED)  # Set this line to NORMAL to enable
 
         checkbox_radar_offline.pack(padx=5, pady=1)
         checkbox_correct_blink = Checkbutton(frame_settings, text="Correct Blinking Radar Frames",
                                              variable=self.correct_blink)
+        self.correct_blink.set(1)
         checkbox_correct_blink.pack(padx=5, pady=1)
         checkbox_geocode_parse = Checkbutton(frame_settings, text="Get Geo-coded Locations",
                                              variable=self.geocode_parse)

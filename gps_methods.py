@@ -12,7 +12,11 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
 
     f = open(gps_kml_filename, 'r')
     fr = f.read()
-    kml_tree = Et.fromstring(fr)
+
+    try:
+        kml_tree = Et.fromstring(fr)
+    except Et.ParseError:
+        raise ImportError("There was an error importing the track kml file")
 
     track = kml_tree.find(".//{http://www.google.com/kml/ext/2.2}Track")
 
