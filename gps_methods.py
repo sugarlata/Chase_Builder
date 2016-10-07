@@ -27,7 +27,8 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     # In KML file, there are "When" tags and "Coord" tags.
     # Read line, if 'when tag' put in 'when' list. If 'coord' put in 'coord' list
 
-    # mid calculates how many updates to send to the user. 42 is suggested here, being the meaning of life.
+    # mid calculates how many updates to send to the user. 42 is suggested here,
+    # being the answer to the meaning of life.
 
     mid = (len(track))/42
 
@@ -66,6 +67,13 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     tb.tb_update("")
 
     for i in range(0, len(when)):
+        # Ensure that points are in consecutive order, if not, throw an error
+        # Test starts from the second point to the end, if the point is previous to the point earlier in the list,
+        # it is out of order.
+        if i > 1:
+            if int(when[i]) - int(when[i-1]) < 0:
+                raise EnvironmentError("Points in GPS file are not in sequential order")
+
         # Create GPSPoint Object based on time, location (lat, lon, height) and put in the timezone
         gps_p = GPSPoint(when[i], locations[i][0], locations[i][1], locations[i][2], tz)
 

@@ -547,6 +547,8 @@ class MainGUI(Frame):
                     # Load the track file into database
                     try:
                         self.grandparent.gps_load_track()
+
+                    # Catch the different errors thrown, check comments to see what sort of error it refers to
                     except ValueError:
                         text_box_main.tb_update("")
                         text_box_main.tb_update("------------------------------------------------------------")
@@ -562,6 +564,20 @@ class MainGUI(Frame):
                         text_box_main.tb_update("The file that you selected is corrupt.")
                         text_box_main.tb_update("The number of time stamps does not match the number of locations")
                         text_box_main.tb_update("Please repair or replace the file.")
+                        text_box_main.tb_update("------------------------------------------------------------")
+                        text_box_main.tb_update("")
+                        critical_error()
+                        return
+                    except EnvironmentError:
+                        text_box_main.tb_update("")
+                        text_box_main.tb_update("------------------------------------------------------------")
+                        text_box_main.tb_update("The file that you selected is corrupt.")
+                        text_box_main.tb_update("The order of the points in the file is incorrect")
+                        text_box_main.tb_update("Points could be either random, or in reverse")
+                        text_box_main.tb_update("Please repair or replace the file.")
+                        text_box_main.tb_update("")
+                        text_box_main.tb_update("A possible repair to this file, is to open it in a text editor and ")
+                        text_box_main.tb_update("reverse order the lines under the <when> tags, and <gx:coords> tags")
                         text_box_main.tb_update("------------------------------------------------------------")
                         text_box_main.tb_update("")
                         critical_error()
