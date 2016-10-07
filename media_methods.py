@@ -281,7 +281,7 @@ def get_video_list(media_path):
     return video_filename_list
 
 
-def set_video_time(video_filename_list, pattern_list, tz, tb):
+def set_video_time(video_filename_list, pattern_list, start_time, end_time, tz, tb):
 
     # Need to match the video to the possible time code
     # Similar to the photo code.
@@ -292,6 +292,8 @@ def set_video_time(video_filename_list, pattern_list, tz, tb):
 
     video_list = []
     rejected_video_filename_list = []
+    start_time = int(start_time)
+    end_time = int(end_time)
 
     # Iterate through each filename in the list
     for i in range(0, len(video_filename_list)):
@@ -314,15 +316,28 @@ def set_video_time(video_filename_list, pattern_list, tz, tb):
                 # Try to convert the time according to the pattern_list
                 video_iso = arrow.get(filename, pattern_list[j][0]).replace(tzinfo=tz)
                 video_epoch = int(video_iso.timestamp)
-                video_list.insert(len(video_list), MediaObject(video_epoch, video_filename_list[i], 0, 0, tz))
-                # If successful up to this point then match is successful for this video, break loop
-                break
-            except arrow.parser.ParserError:
 
+                # Check to see whether the video was taken during the time or not
+                if video_epoch < start_time or video_epoch > end_time:
+                    tb.tb_update("")
+                    tb.tb_update(video_filename_list[i] + " was not taken during the specified chase time")
+                    # Add video to the rejected video file name list. This means it can be manually time coded later
+                    # if the user desires
+                    rejected_video_filename_list.insert(len(rejected_video_filename_list), video_filename_list[i])
+                    break
+
+                else:
+                    # Insert the video into the database
+                    video_list.insert(len(video_list), MediaObject(video_epoch, video_filename_list[i], 0, 0, tz))
+                    # If successful up to this point then match is successful for this video, break loop
+                    break
+
+            except arrow.parser.ParserError:
                 # If it fails, it will continue to the next iteration in the pattern list
                 if j == len(pattern_list)-1:
                     # If it fails and can't find a time, add it to a rejected list for user to determine manually.
-                    tb.tb_update("Could not match time for " + filename)
+                    tb.tb_update("")
+                    tb.tb_update("Could not match time for video " + filename)
                     rejected_video_filename_list.insert(len(rejected_video_filename_list), video_filename_list[i])
 
     return video_list, rejected_video_filename_list

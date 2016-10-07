@@ -211,13 +211,16 @@ def get_local_radar_frames_db(radar_set, radar_path, start_time, end_time, tb):
                 idr_frame_db.append(RadarFrameOffline(frame_filename_list[i]))
 
         # Once the iteration is complete, put the db of frames for that location, in the frame database
-        frame_db.append(idr_frame_db)
+        # Sometimes the idr_frame_db will return blank frames for small frame numbers. This will eliminate that error
+        if idr_frame_db != []:
+            frame_db.append(idr_frame_db)
 
     tb.tb_update("")
     tb.tb_update("Completed")
     tb.tb_update("")
     tb.tb_update("------------------------------------------------------------")
     tb.tb_update("")
+
     return frame_db
 
 

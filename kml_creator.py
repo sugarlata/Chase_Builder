@@ -83,8 +83,8 @@ def create_radar_kml(frame_db, root_path, radar_path, tb):
 
         # List of radar overlay objects
         frame_list = frame_db[k]
-        # Get the IDR Code. Each frame in the sub list will be identical
 
+        # Get the IDR Code. Each frame in the sub list will be identical
         idr_code = frame_list[0].get_filename().split('.')[0]
         radar_title = ""
         radar_db.select_radar(idr_code)
@@ -183,7 +183,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
                 # Create a new point in the kml folder. Keep this point in the photo_items list.
                 # Currently set the name of the group to the group number. After creating the groups, will change this
                 # to the location of the group (using geocode info returned from Google)
-                photo_items.append(kml_folders[0].newpoint(name=str(photo_list[i].get_group_number())))
+                photo_items.append(kml_folders[len(kml_folders)-1].newpoint(name=str(photo_list[i].get_group_number())))
                 lat, lon = photo_list[i].get_location()
                 photo_items[i - k].coords = [(lon, lat)]
 
@@ -262,7 +262,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
 
         video_items = []
 
-        # Create the Photo folder inside the kml, keep this in the kml_folders list.
+        # Create the Video folder inside the kml, keep this in the kml_folders list.
         kml_folders.insert(len(kml_folders), kml.newfolder(name='Videos'))
         k = 0
 
@@ -275,7 +275,10 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
                 # Create a new point in the kml folder. Keep this point in the video_items list.
                 # Currently set the name of the group to the group number. After creating the groups, will change this
                 # to the location of the group (using geocode info returned from Google)
-                video_items.append(kml_folders[1].newpoint(name=str(video_list[i].get_group_number())))
+                print video_list[i].get_group_number()
+                print len(kml_folders)
+
+                video_items.append(kml_folders[len(kml_folders)-1].newpoint(name=str(video_list[i].get_group_number())))
                 lat, lon = video_list[i].get_location()
                 video_items[i - k].coords = [(lon, lat)]
 
@@ -368,7 +371,7 @@ ShowStatusBar="1" ShowDisplay="1" autostart="0"> </embed>
                 # Create a new point in the kml folder. Keep this point in the video_items list.
                 # Currently set the name of the group to the group number. After creating the groups, will change this
                 # to the location of the group (using geocode info returned from Google)
-                time_items.append(kml_folders[1].newpoint(name=str(time_list[i].get_group_number())))
+                time_items.append(kml_folders[len(kml_folders)-1].newpoint(name=str(time_list[i].get_group_number())))
                 lat, lon = time_list[i].get_location()
                 time_items[i - k].coords = [(lon, lat)]
 

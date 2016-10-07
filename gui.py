@@ -9,8 +9,10 @@ import tkMessageBox
 import tkSimpleDialog
 import kml_creator
 import sys
+import os
 from tkFileDialog import askopenfilename
 from tkFileDialog import askdirectory
+from tkMessageBox import askokcancel
 from Tkinter import IntVar
 from Tkinter import StringVar
 from Tkinter import Label
@@ -479,6 +481,9 @@ class MainGUI(Frame):
 
         def get_root_button():
 
+            text_box_main.tb_update("------------------------------------------------------------")
+            text_box_main.tb_update("Now setting the root folder")
+            text_box_main.tb_update("")
             # GUI to ask for root directory
             root_path = askdirectory(title="Please select the Chase Root Folder",
                                      initialdir=r"C:\Users\Nathan\Desktop\Chase Copy")
@@ -500,6 +505,13 @@ class MainGUI(Frame):
                 checkbox_geocode_parse.config(state=DISABLED)
                 checkbox_radar_offline.config(state=DISABLED)
 
+                text_box_main.tb_update("Root folder selected:")
+                text_box_main.tb_update(root_path)
+                text_box_main.tb_update("")
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("Root folder selected")
+                text_box_main.tb_update("------------------------------------------------------------")
+
         def open_gps_file():
 
             try:
@@ -510,6 +522,22 @@ class MainGUI(Frame):
                 gps_track_filename = askopenfilename(title="Select the Chase GPS Track",
                                                      initialdir=self.grandparent.root_path, **file_open_options)
 
+                # Check file size
+                gps_file_size = os.path.getsize(gps_track_filename)
+                if gps_file_size > 1048576:
+                    # If it is a large file, ask the user whether they would like to continue
+                    message_file_too_big = askokcancel("Large File Size", "The file size is larger than 1Mb, this can"
+                                                                          " slow the program down considerably. Would"
+                                                                          " you like to continue?")
+                    # If continue is not selected, exit the method
+                    if str(message_file_too_big) != "True":
+                        return
+                text_box_main.tb_update("")
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("Opening GPS Track File")
+                text_box_main.tb_update("If the program doesn't respond for more than 30 seconds, please force "
+                                        "program close")
+                text_box_main.tb_update("")
                 # Check that the filename is not blank
                 if not gps_track_filename == "":
                     # Clean up the filename and put it in main module
@@ -517,7 +545,17 @@ class MainGUI(Frame):
                     self.grandparent.gps_track_filename = gps_track_filename
 
                     # Load the track file into database
-                    self.grandparent.gps_load_track()
+                    try:
+                        self.grandparent.gps_load_track()
+                    except ValueError:
+                        text_box_main.tb_update("")
+                        text_box_main.tb_update("------------------------------------------------------------")
+                        text_box_main.tb_update("The file that you selected has too few points.")
+                        text_box_main.tb_update("Please select another file, or edit the file to include more points")
+                        text_box_main.tb_update("------------------------------------------------------------")
+                        text_box_main.tb_update("")
+                        critical_error()
+                        return
 
                     # Set the local start and end times to the main modules
                     start_time = arrow.get(self.grandparent.start_time)
@@ -537,12 +575,15 @@ class MainGUI(Frame):
             # user aware of this and force the restart using critical_restart method
             except ImportError:
                 text_box_main.tb_update("")
-                text_box_main.tb_update("-----------------------------------------------")
+                text_box_main.tb_update("------------------------------------------------------------")
                 text_box_main.tb_update("There was an error importing the track kml file")
                 text_box_main.tb_update("Please restart the program")
-                text_box_main.tb_update("-----------------------------------------------")
+                text_box_main.tb_update("------------------------------------------------------------")
                 text_box_main.tb_update("")
                 critical_error()
+
+            text_box_main.tb_update("GPS File opened successfully")
+            text_box_main.tb_update("------------------------------------------------------------")
 
         def trim_gps():
             # Run GPS Trim GUI
@@ -623,6 +664,11 @@ class MainGUI(Frame):
             button_create_media_kml.config(state=DISABLED)
             text_box_main.tb_update("")
             text_box_main.tb_update("Please restart Chase Builder")
+            text_box_main.tb_update("If this error continues to occur, please email Nathan")
+            text_box_main.tb_update("nathan.sgarlata+chasebuilder@gmail.com")
+            text_box_main.tb_update("")
+            text_box_main.tb_update("Please indicate in the email what feature wasn't working")
+            text_box_main.tb_update("A copy of the files you are working with may be requested to reproduce the error")
 
         # Create the StringVars for Main Window
         self.str_root_folder = StringVar()

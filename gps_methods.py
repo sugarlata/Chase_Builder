@@ -34,8 +34,11 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     for i in range(0, len(track)):
 
         # Update user on what percentage of the file has bee read, at selected intervals.
-        if round(float(i)/float(mid), 0) == float(i)/float(mid):
-            tb.tb_update(str(round(100*float(i)/float(len(track)), 2)) + "%")
+        try:
+            if round(float(i)/float(mid), 0) == float(i)/float(mid):
+                tb.tb_update(str(round(100*float(i)/float(len(track)), 2)) + "%")
+        except ZeroDivisionError:
+            tb.tb_update("")
 
         if track[i].tag[-4:] == "when":
             when.insert(len(when), arrow.get(str(track[i].text).split(' ')[0]).format('X'))
@@ -74,6 +77,10 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
 
     # Update the User
     tb.tb_update(str(len(gps_points_list)) + " points were successfully imported")
+
+    # If too few points loaded, throw error
+    if len(gps_points_list) < 3:
+        raise ValueError("Too few points in file")
 
     # Close the file
     f.close()

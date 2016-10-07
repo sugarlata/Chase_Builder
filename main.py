@@ -137,7 +137,8 @@ class MainApplication:
 
             # Get time from filename
             self.video_list, self.rejected_video_filename_list =\
-                media_methods.set_video_time(self.video_filename_list, self.pattern_list, self.tz, self.tb)
+                media_methods.set_video_time(self.video_filename_list, self.pattern_list, self.start_time,
+                                             self.end_time, self.tz, self.tb)
             self.video_len = len(self.video_filename_list)
             str_videos.set(self.video_len)
 
