@@ -556,6 +556,16 @@ class MainGUI(Frame):
                         text_box_main.tb_update("")
                         critical_error()
                         return
+                    except AttributeError:
+                        text_box_main.tb_update("")
+                        text_box_main.tb_update("------------------------------------------------------------")
+                        text_box_main.tb_update("The file that you selected is corrupt.")
+                        text_box_main.tb_update("The number of time stamps does not match the number of locations")
+                        text_box_main.tb_update("Please repair or replace the file.")
+                        text_box_main.tb_update("------------------------------------------------------------")
+                        text_box_main.tb_update("")
+                        critical_error()
+                        return
 
                     # Set the local start and end times to the main modules
                     start_time = arrow.get(self.grandparent.start_time)

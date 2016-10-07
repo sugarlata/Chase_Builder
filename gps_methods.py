@@ -55,11 +55,8 @@ def get_gps_track_list(gps_kml_filename, tz, tb):  # Function to get the GPS KML
     tb.tb_update("")
 
     # If length of when list is different to coords list, then throw an error
-
     if len(when) != len(locations):
-        tb.tb_update("There was an error in your KML file")
-        tb.tb_update("Please start again with another KML file")
-        exit()
+        raise AttributeError("There is a difference in the ")
 
     # Create a GPSPoint object for each point in 'when' and 'coord'. Put this point in a list of points
 
