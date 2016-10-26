@@ -622,7 +622,21 @@ class MainGUI(Frame):
             button_identify_radars.config(state=DISABLED)
 
             # Run code to get the IDR Code list (nearest radars)
-            self.grandparent.radar_get_local_idr_list()
+            try:
+                self.grandparent.radar_get_local_idr_list()
+            except ValueError as e:
+                text_box_main.tb_update("")
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("There has been in internal error relating to matching IDR Codes")
+                text_box_main.tb_update("This error is critical and you will need to restart the program")
+                text_box_main.tb_update("Please report error to:")
+                text_box_main.tb_update("nathan.sgarlata+chasebuilder@gmail.com")
+                text_box_main.tb_update("For troubleshooting purposes a copy of the track file may be required")
+                text_box_main.tb_update("")
+                text_box_main.tb_update("Error Code:")
+                text_box_main.tb_update(e.message)
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("")
 
             # Enable / Disable Buttons
             button_manually_select_radar.config(state=NORMAL)
@@ -637,25 +651,54 @@ class MainGUI(Frame):
             button_manually_select_radar.config(state=DISABLED)
             button_process_radar.config(state=DISABLED)
 
-            # Check if Chase Builder is suppoed to get local radars, or download
-            if self.radar_offline.get() == 0:
-                self.grandparent.download_radar_module = True
-            else:
-                self.grandparent.download_radar_module = False
+            try:
+                # Check if Chase Builder is supposed to get local radars, or download
+                if self.radar_offline.get() == 0:
+                    self.grandparent.download_radar_module = True
+                else:
+                    self.grandparent.download_radar_module = False
 
-            # Process the radar (into database in main module)
-            self.grandparent.process_radar()
+                # Process the radar (into database in main module)
+                self.grandparent.process_radar()
 
-            # If Correct Blink option was enabled, then run code to correct this.
-            if self.correct_blink.get() == 1:
-                self.grandparent.correct_blink()
+                # If Correct Blink option was enabled, then run code to correct this.
+                if self.correct_blink.get() == 1:
+                    self.grandparent.correct_blink()
+            except ValueError as e:
+                text_box_main.tb_update("")
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("There has been in internal error relating to matching IDR Codes")
+                text_box_main.tb_update("This error is critical and you will need to restart the program")
+                text_box_main.tb_update("Please report error to:")
+                text_box_main.tb_update("nathan.sgarlata+chasebuilder@gmail.com")
+                text_box_main.tb_update("For troubleshooting purposes a copy of the track file may be required")
+                text_box_main.tb_update("")
+                text_box_main.tb_update("Error Code:")
+                text_box_main.tb_update(e.message)
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("")
 
             # Enable / Disable Buttons
             button_create_radar_kml.config(state=NORMAL)
 
         def create_radar_kml():
             # Create Radar KML File
-            self.grandparent.create_radar_kml_file()
+            try:
+                self.grandparent.create_radar_kml_file()
+            except ValueError as e:
+                text_box_main.tb_update("")
+                text_box_main.tb_update("-----------------------------------------------------------")
+                text_box_main.tb_update("There has been in internal error relating to matching IDR Codes")
+                text_box_main.tb_update("This error is critical and you will need to restart the program")
+                text_box_main.tb_update("Please report error to:")
+                text_box_main.tb_update("nathan.sgarlata+chasebuilder@gmail.com")
+                text_box_main.tb_update("For troubleshooting purposes a copy of the track file may be required")
+                text_box_main.tb_update("")
+                text_box_main.tb_update("Error Code:")
+                text_box_main.tb_update(e.message)
+                text_box_main.tb_update("------------------------------------------------------------")
+                text_box_main.tb_update("")
+
             button_create_radar_kml.config(state=DISABLED)
 
         def find_media():

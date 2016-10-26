@@ -87,7 +87,7 @@ def create_radar_kml(frame_db, root_path, radar_path, tb):
         # Get the IDR Code. Each frame in the sub list will be identical
         idr_code = frame_list[0].get_filename().split('.')[0]
         radar_title = ""
-        radar_db.select_radar(idr_code)
+        radar_db.select_radar(idr_code[:-1]+"3")  # idr_code
         if idr_code[-1:] == "I":
             radar_title = radar_db.get_title(idr_code) + " 128km Doppler Wind (" + idr_code + ")"
         elif idr_code[-1:] == "2":
@@ -110,7 +110,7 @@ def create_radar_kml(frame_db, root_path, radar_path, tb):
             # Set the details for this ground overlay
             # What image will be over-layed
             ground[i].icon.href = radar_path + "\\" + filename.split('.')[0] + "\\" + filename
-            radar_db.select_radar(idr_code)
+            radar_db.select_radar(idr_code[:-1]+"3")
 
             # What the position of the image will be
             ground[i].latlonbox.north, ground[i].latlonbox.south, ground[i].latlonbox.east, ground[i].latlonbox.west =\

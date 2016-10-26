@@ -555,6 +555,11 @@ class RadarDB:
             self.__256__ = True
             self.__512__ = True
             self.__doppler__ = True
+        else:
+            # If there is no match for the IDR code, then something has gone wrong, throw and error.
+            error_string = "There is no match for the IDR Code. IDR Code Given: " + idr
+
+            raise ValueError(error_string)
 
         # Calculate NSEW as needed
         self.calculate_nsew_s()
