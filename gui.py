@@ -389,6 +389,7 @@ class TrimGPS(Toplevel):
         self.title("Trim Chase Start and End")
         self.grandparent = grandparent
         self.protocol("WM_DELETE_WINDOW", trim_window_close)
+        self.resizable(width=False, height=False)
 
         self.gps_track = self.grandparent.gps_track
 
@@ -396,7 +397,7 @@ class TrimGPS(Toplevel):
         self.trim_start = 0
         self.trim_end = len(self.gps_track)
 
-        # Create Int Variables for scrollbars
+        # Create Int Variables for scroll bars
         var_start = IntVar()
         var_end = IntVar()
 
@@ -422,11 +423,11 @@ class TrimGPS(Toplevel):
         frame_bottom.pack(anchor=CENTER)
 
         button_set_start = Button(frame_bottom, text="Set Start Time", command=set_start)
-        button_set_start.grid(row=2, column=2)
+        button_set_start.grid(row=2, column=2, padx=2)
         button_set_start_left = Button(frame_bottom, text="Left", command=set_start_left)
-        button_set_start_left.grid(row=2, column=1)
+        button_set_start_left.grid(row=2, column=1, padx=2)
         button_set_start_right = Button(frame_bottom, text="Right", command=set_start_right)
-        button_set_start_right.grid(row=2, column=3)
+        button_set_start_right.grid(row=2, column=3, padx=2)
 
         label_space = Label(frame_main, text="")
         label_space.pack(anchor=CENTER)
@@ -445,15 +446,15 @@ class TrimGPS(Toplevel):
         end_frame.pack(anchor=CENTER)
 
         button_set_end = Button(end_frame, text="Set Start Time", command=set_end)
-        button_set_end.grid(row=2, column=2)
+        button_set_end.grid(row=2, column=2, padx=2)
         button_set_end_left = Button(end_frame, text="Left", command=set_end_left)
-        button_set_end_left.grid(row=2, column=1)
+        button_set_end_left.grid(row=2, column=1, padx=2)
         button_set_end_right = Button(end_frame, text="Right", command=set_end_right)
-        button_set_end_right.grid(row=2, column=3)
+        button_set_end_right.grid(row=2, column=3, padx=2)
 
         # OK Button at Bottom
         button_ok = Button(frame_main, text="OK", command=ok)
-        button_ok.pack(anchor=CENTER)
+        button_ok.pack(anchor=CENTER, pady=5)
 
 
 # GUI for Main Base
